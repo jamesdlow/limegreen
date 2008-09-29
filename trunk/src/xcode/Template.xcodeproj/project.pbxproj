@@ -1,0 +1,156 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildStyle section */
+		88230FFC05D9926E00FE8D22 /* Clean */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+			};
+			name = Clean;
+		};
+		88230FFC05D9926E00FE8D22 /* Debug */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		88230FFD05D9926E00FE8D22 /* Release */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End PBXBuildStyle section */
+
+/* Begin PBXFileReference section */
+		886FEE5605D9BD280091015F /* build.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = build.xml; sourceTree = "<group>"; };
+		886FEE5705D9BD280091015F /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
+		886FEE5905D9BD280091015F /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; path = src; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		88230FFA05D9926E00FE8D22 = {
+			isa = PBXGroup;
+			children = (
+				886FEE5605D9BD280091015F /* build.xml */,
+				886FEE5905D9BD280091015F /* src */,
+				886FEE5705D9BD280091015F /* lib */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXLegacyTarget section */
+		8823100505D9929B00FE8D22 /* «PROJECTNAMEASIDENTIFIER» */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "-emacs $(ACTION)";
+			buildConfigurationList = 0A5CE55108BBAA1100F96152 /* Build configuration list for PBXLegacyTarget "«PROJECTNAMEASIDENTIFIER»" */;
+			buildPhases = (
+			);
+			buildSettings = {
+				PRODUCT_NAME = "«PROJECTNAMEASIDENTIFIER»";
+			};
+			buildToolPath = /Developer/Java/Ant/bin/ant;
+			dependencies = (
+			);
+			name = "«PROJECTNAMEASIDENTIFIER»";
+			passBuildSettingsInEnvironment = 1;
+			productName = "«PROJECTNAMEASIDENTIFIER»";
+		};
+/* End PBXLegacyTarget section */
+
+/* Begin PBXProject section */
+		88230FFE05D9926E00FE8D22 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 0A5CE55508BBAA1100F96152 /* Build configuration list for PBXProject "RunJar" */;
+			buildSettings = {
+			};
+			buildStyles = (
+				88230FFC05D9926E00FE8D22 /* Clean */,
+				88230FFC05D9926E00FE8D22 /* Debug */,
+				88230FFD05D9926E00FE8D22 /* Release */,
+			);
+			hasScannedForEncodings = 1;
+			mainGroup = 88230FFA05D9926E00FE8D22;
+			projectDirPath = "";
+			targets = (
+				8823100505D9929B00FE8D22 /* «PROJECTNAMEASIDENTIFIER» */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		0A5CE55208BBAA1100F96152 /* Clean */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				PRODUCT_NAME = "«PROJECTNAMEASIDENTIFIER»";
+			};
+			name = Clean;
+		};
+		0A5CE55208BBAA1100F96152 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				PRODUCT_NAME = "«PROJECTNAMEASIDENTIFIER»";
+			};
+			name = Debug;
+		};
+		0A5CE55308BBAA1100F96152 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				PRODUCT_NAME = "«PROJECTNAMEASIDENTIFIER»";
+			};
+			name = Release;
+		};
+		0A5CE55608BBAA1100F96152 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Clean;
+		};
+		0A5CE55608BBAA1100F96152 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		0A5CE55708BBAA1100F96152 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0A5CE55108BBAA1100F96152 /* Build configuration list for PBXLegacyTarget "«PROJECTNAMEASIDENTIFIER»" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0A5CE55208BBAA1100F96152 /* Clean */,
+				0A5CE55208BBAA1100F96152 /* Debug */,
+				0A5CE55308BBAA1100F96152 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0A5CE55508BBAA1100F96152 /* Build configuration list for PBXProject "RunJar" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0A5CE55608BBAA1100F96152 /* Clean */,
+				0A5CE55608BBAA1100F96152 /* Debug */,
+				0A5CE55708BBAA1100F96152 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 88230FFE05D9926E00FE8D22 /* Project object */;
+}
