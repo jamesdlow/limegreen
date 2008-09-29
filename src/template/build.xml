@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="@ProjectName@" default="jar" basedir=".">
+    <property name="props" value="build.properties"/>
+    <property file="${props}"/>
+	<property name="name" value="${application.name}"/>
+	<!-- Preexisitng Directories -->
+	<property name="src" location="src"/>
+	<property name="lib" location="lib"/>
+	<property name="tools" location="tools"/>
+		<property name="manifest" location="${tools}/manifest"/>
+		<property name="onejar" location="${tools}/onejar"/>
+		<property name="jarbundler" location="${tools}/jarbundler"/>
+		<property name="jsmooth" location="${tools}/jsmooth"/>
+			<property name="jsmooth.edit" location="${jsmooth}/editor"/>
+			<property name="jsmooth.infile" location="${jsmooth}/ant.jsmooth"/>
+		<property name="applejava" location="${tools}/applejava"/>
+	<!-- Output Directories -->	
+	<property name="build" location="build"/>
+		<property name="bin" location="${build}/bin"/>
+		<property name="dist" location="${build}/dist"/>
+			<property name="jarfile" location="${dist}/${name}.jar"/>
+			<property name="appfile" location="${dist}/${name}.app"/>
+			<property name="exefile" location="${dist}/${name}.exe"/>
+			<property name="jsmooth.outfile" location="${dist}/${name}.jsmooth"/>
+		<property name="jar" location="${build}/jar"/>
+			<property name="jar.main" location="${jar}/main"/>
+			<property name="jar.lib" location="${jar}/lib"/>
+			<property name="jarfile.main" location="${jar.main}/main.jar"/>		
+		<property name="app" location="${build}/app"/>
+		<property name="exe" location="${build}/exe"/>
+	
+	<taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler"  classpath="${jarbundler}/jarbundler-1.9.jar"/>
+	<taskdef name="jsmoothgen" classname="net.charabia.jsmoothgen.ant.JSmoothGen" classpath="${jsmooth}/jsmoothgen-ant.jar"/>
+	
+	<target name="check.properties">
+		<condition property="onejar.do">
+			<istrue value="${onejar.use}"/>
+		</condition>
+		<condition property="include.do">
+			<isfalse value="${onejar.use}"/>
+		</condition>
+		<condition property="mainclass" value="com.simontuffs.onejar.Boot">
+			<istrue value="${onejar.use}"/>
+		</condition>
+		<condition property="mainclass" value="${main.class}">
+			<isfalse value="${onejar.use}"/>
+		</condition>
+		<condition property="is.mac">
+			<os family="mac"/>
+		</condition>
+		<condition property="is.windows">
+			<os family="windows"/>
+		</condition>
+		<condition property="is.unix">
+			<and>
+				<os family="unix"/>
+				<not><os family="mac"/></not>
+			</and>
+		</condition>
+		<condition property="is.other">
+			<and>
+				<not><os family="mac"/></not>
+				<not><os family="unix"/></not>
+				<not><os family="windows"/></not>
+			</and>
+		</condition>
+	</target>
+
+	<fileset id="lib.jars" dir="${lib}">
+		<include name="**/*.jar"/>
+	</fileset>
+	<path id="lib.path">
+		<fileset refid="lib.jars"/>
+		<pathelement path="${applejava}/AppleJavaExtensions.jar"/>
+	</path>
+	
+	<target name="compile.onejar" depends="check.properties" description="Compile onejar">
+		<javac srcdir="${onejar}" destdir="${onejar}"
+			source="1.4" target="1.4"
+			failonerror="true"
+        	includes="**/*.java">
+		</javac>
+	</target>
+	
+	<target name="prepare" depends="check.properties" description="Create build dirs">
+		<mkdir dir="${build}"/>
+			<mkdir dir="${bin}"/>
+			<mkdir dir="${dist}"/>
+			<mkdir dir="${jar}"/>
+				<mkdir dir="${jar.main}"/>
+				<mkdir dir="${jar.lib}"/>
+			<mkdir dir="${app}"/>
+			<mkdir dir="${exe}"/>
+	</target>
+	
+	<target name="version" depends="prepare" description="Prompt user to enter new version">
+		 <input
+			message="Please input a new version. Current version ${build.version}"
+			addproperty="new.version"
+		 />
+		<propertyfile file="${props}">
+			<entry key="build.version" value="${new.version}"/>
+		</propertyfile>
+	</target>
+	
+	<target name="create.jsmooth" depends="prepare" description="Create JSmooth config file">
+		<copy file="${application.win.icon}" todir="${dist}"/>
+		<copy file="${jsmooth.infile}" tofile="${jsmooth.outfile}"/>
+		<replace file="${jsmooth.outfile}" token="@icofile@" value="${application.win.icon}"/>
+		<replace file="${jsmooth.outfile}" token="@exefile@" value="${name}.exe"/>
+		<replace file="${jsmooth.outfile}" token="@jarfile@" value="${name}.jar"/>
+		<replace file="${jsmooth.outfile}" token="@mainclass@" value="${mainclass}"/>
+	</target>
+	
+	<target name="compile" depends="prepare" description="Compile code">
+		<javac srcdir="${src}" destdir="${bin}"
+			source="${build.jvm}" target="${build.jvm}"
+			failonerror="true"
+        	includes="**/*.*"
+			classpathref="lib.path">
+		</javac>
+		<propertyfile file="${props}">
+			<entry key="build.date" type="date" value="now"/>
+		</propertyfile>
+		<buildnumber file="${props}"/>
+		<copy todir="${bin}">
+			<fileset dir="${src}">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+		<copy file="${props}" todir="${bin}"/>
+		<manifest file="${manifest}/main-MANIFEST.MF">
+			<attribute name="Manifest-Version" value="1.0"/>
+			<attribute name="Main-Class" value="${main.class}"/>
+		</manifest>
+	</target>
+			
+	<target name="jar.onejar" depends="compile" if="onejar.do">
+		<echo message="Placing library jars witin main jar, onejar.use=${onejar.use}."/>
+		<copy todir="${jar.lib}">
+			<fileset dir="${lib}"/>		
+		</copy>
+		<!--
+		<manifestclasspath property="jar.classpath" jarfile="${jarfile.main}">
+			<classpath refid="lib.path"/>
+		</manifestclasspath>
+			<attribute name="Class-Path" value="${jar.classpath}" />
+		-->
+		<jar jarfile="${jarfile.main}" basedir="${bin}" manifest="${manifest}/main-MANIFEST.MF">
+		</jar>
+		<jar jarfile="${jarfile}" manifest="${manifest}/onejar-MANIFEST.MF">
+			<fileset dir="${jar}"/>
+		    <fileset dir="${onejar}" includes="**/*.class"/>
+		</jar>
+	</target>
+	<target name="jar.include" depends="compile" if="include.do">
+		<echo message="Extracting and including library jars in main jar, onejar.use=${onejar.use}."/>
+		<jar jarfile="${jarfile}" basedir="${bin}" manifest="${manifest}/main-MANIFEST.MF">
+			<!-- Merge library jars into final jar file -->
+			<zipgroupfileset refid="lib.jars"/>
+		</jar>
+	</target>
+
+	<target name="jar" depends="jar.onejar,jar.include" description="Build jar">
+		<!-- At the moment jar requires nothing else -->
+	</target>
+	<target name="exe" depends="jar,create.jsmooth" description="Build exe">
+		<jsmoothgen project="${jsmooth.outfile}" skeletonroot="${jsmooth}/skeletons"/>
+	</target>
+	<target name="app" depends="jar" description="Build app">
+		<jarbundler
+			name="${name}"
+			shortname="${name}"
+			icon="${application.osx.icon}"
+			jvmversion="${build.jvm}+"
+			build="${build.number}"
+			version="${build.version}"
+			dir="${dist}"
+			mainclass="${mainclass}"
+			jar="${jarfile}"/>
+	</target>
+	<target name="dmg" depends="app" description="Make dmg" if="is.mac">
+		<!-- Requires OSX -->
+		<exec dir="${dist}" executable="hdiutil">
+			<arg line="create -ov -srcfolder ${name}.app ${name}.dmg"/>
+		</exec>
+	</target>
+	<target name="zip" depends="exe" description="Make zip">
+		 <zip destfile="${dist}/${name}.zip"
+			basedir="${dist}"
+			includes="${name}.exe" />
+	</target>
+
+	<target name="run" depends="jar" description="Run jar file">
+		<java jar="${jarfile}" fork="yes" failonerror="true"/>
+	</target>
+
+	<target name="build" description="Build dmg,zip" depends="dmg,zip">
+		<!-- At the moment deploy requires nothing else -->
+	</target>
+	
+	<target name="deploy" description="Deploy Build" depends="version,build">
+		<!-- At the moment deploy requires nothing else -->
+	</target>
+
+	<target name="clean" description="Remove build and dist directories">
+		<delete dir="${build}"/>
+	</target>
+</project>

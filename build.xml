@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Limegreen" default="alltemplates" basedir=".">
+    <property name="props" value="build.properties"/>
+    <property file="${props}"/>
+    <property name="secret" value="secret.properties"/>
+    <property file="${secret}"/>
+	<!-- Preexisitng Directories -->
+	<property name="tools" location="tools"/>
+		<property name="google" location="${tools}/google"/>
+		<property name="sourceforge" location="${tools}/sourceforge"/>
+		<property name="sflib" location="${sourceforge}/lib"/>
+	<property name="src" location="src"/>
+		<property name="template" location="${src}/template"/>
+		<property name="templatesrc" location="${template}/src"/>
+		<property name="eclipse" location="${src}/eclipse"/>
+		<property name="eclipseplugin" location="${eclipse}/Plugin"/>
+		<property name="xcode" location="${src}/xcode"/>
+	<property name="build" location="build"/>
+		<property name="antbuild" location="${build}/ant"/>
+			<property name="anttemplate" location="${antbuild}/Template"/>
+		<property name="eclipsebuild" location="${build}/eclipse"/>
+		<property name="xcodebuild" location="${build}/xcode"/>
+			<property name="xcodeproject" location="${xcodebuild}/Native Java Swing Application"/>
+
+	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="${google}/ant-googlecode-0.0.1.jar" name="gcupload" />
+	<!-- need to include other clases in this classpath -->
+	<taskdef name="sfpublish" classname="org.apache.tools.ant.taskdefs.optional.sourceforge.SourceForgePublish" classpath="${sourceforge}/sfutils-1.01RC1.jar" />
+
+	<target name="ant" description="Create Ant Template">
+		<copy todir="${anttemplate}">
+			<fileset dir="${template}">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+		<replace dir="${anttemplate}" token="@ProjectName@" value="Template">
+			<include name="**/*"/>
+		</replace>
+	</target>
+	
+	<target name="eclipse" description="Create Eclipse Plugin">
+
+	</target>
+
+	<target name="xcode" description="Create Xcode Project">
+		<copy todir="${xcodeproject}">
+			<fileset dir="${template}">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+		<copy todir="${xcodeproject}">
+			<fileset dir="${xcode}">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+		<replace dir="${xcodeproject}" token="@ProjectName@" value="«PROJECTNAMEASIDENTIFIER»">
+			<include name="**/*"/>
+		</replace>
+	</target>
+
+	<target name="alltemplates" description="Create All" depends="ant,eclipse,xcode">
+		<!-- At the moment deploy requires nothing else -->
+	</target>
+
+	<target name="sourceforge" description="Deploy All To Sourceforge" depends="alltemplates">
+		<sfpublish
+			releasename="my-release-1.0"
+			packagename="my-sourceforge-package-name"
+			packagehidden="no"
+			hidden="no"
+			projectshortname="samples"
+			projectname="A Sample SourceForge Project"
+			username="myUsername"
+			password="myPassword"
+			releasedate="6/28/2003">
+			<filespec
+				file="/path/to/file/to/be/released"
+				filetype="other"
+				processortype="sparc"/>
+			<filespec
+				file="/path/to/another/file/to/be/released" 
+				filetype="gzip_file" 
+				processortype="platform_independent"/>
+		</sfpublish>
+	</target>
+
+	<target name="google" description="Deploy All To GoogleCode" depends="alltemplates">
+		<gcupload 
+        	username="googleuser" 
+	        password="secretpassword" 
+    	    projectname="myproject" 
+        	filename="path/file.name" 
+	        targetfilename="version_0_file.name"
+    	    summary="Version 0 of myproject"
+        	labels="Featured, Type-Package, OpSys-All" />
+	</target>
+	
+	<target name="delpoyall" description="Deploy All To GoogleCode And Sourceforge" depends="sourceforge,google">
+		<!-- At the moment deploy requires nothing else -->
+	</target>
+</project>
