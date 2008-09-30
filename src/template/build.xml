@@ -14,6 +14,7 @@
 			<property name="jsmooth.edit" location="${jsmooth}/editor"/>
 			<property name="jsmooth.infile" location="${jsmooth}/ant.jsmooth"/>
 		<property name="applejava" location="${tools}/applejava"/>
+		<property name="google" location="${tools}/google"/>
 	<!-- Output Directories -->	
 	<property name="build" location="build"/>
 		<property name="bin" location="${build}/bin"/>
@@ -31,40 +32,52 @@
 	
 	<taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler"  classpath="${jarbundler}/jarbundler-1.9.jar"/>
 	<taskdef name="jsmoothgen" classname="net.charabia.jsmoothgen.ant.JSmoothGen" classpath="${jsmooth}/jsmoothgen-ant.jar"/>
+	<condition property="google.classpath"
+		value="${google};${google}/ant-googlecode-0.0.1.jar"
+		else="${google}/ant-googlecode-0.0.1.jar">
+		<not>
+			<available classname="org.apache.tools.ant.util.Base64Converter"/>
+		</not>
+	</condition>
+	<echo message="Google classpath set to ${google.classpath}"/>
+	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="${google.classpath}" name="gcupload"/>
 	
-	<target name="check.properties">
-		<condition property="onejar.do">
-			<istrue value="${onejar.use}"/>
-		</condition>
-		<condition property="include.do">
-			<isfalse value="${onejar.use}"/>
-		</condition>
-		<condition property="mainclass" value="com.simontuffs.onejar.Boot">
-			<istrue value="${onejar.use}"/>
-		</condition>
-		<condition property="mainclass" value="${main.class}">
-			<isfalse value="${onejar.use}"/>
-		</condition>
-		<condition property="is.mac">
+	<condition property="onejar.do">
+		<istrue value="${onejar.use}"/>
+	</condition>
+	<condition property="include.do">
+		<isfalse value="${onejar.use}"/>
+	</condition>
+	<condition property="mainclass" value="com.simontuffs.onejar.Boot">
+		<istrue value="${onejar.use}"/>
+	</condition>
+	<condition property="mainclass" value="${main.class}">
+		<isfalse value="${onejar.use}"/>
+	</condition>
+	<condition property="is.mac">
+		<os family="mac"/>
+	</condition>
+	<condition property="not.mac">
+		<not>
 			<os family="mac"/>
-		</condition>
-		<condition property="is.windows">
-			<os family="windows"/>
-		</condition>
-		<condition property="is.unix">
-			<and>
-				<os family="unix"/>
-				<not><os family="mac"/></not>
-			</and>
-		</condition>
-		<condition property="is.other">
-			<and>
-				<not><os family="mac"/></not>
-				<not><os family="unix"/></not>
-				<not><os family="windows"/></not>
-			</and>
-		</condition>
-	</target>
+		</not>
+	</condition>
+	<condition property="is.windows">
+		<os family="windows"/>
+	</condition>
+	<condition property="is.unix">
+		<and>
+			<os family="unix"/>
+			<not><os family="mac"/></not>
+		</and>
+	</condition>
+	<condition property="is.other">
+		<and>
+			<not><os family="mac"/></not>
+			<not><os family="unix"/></not>
+			<not><os family="windows"/></not>
+		</and>
+	</condition>
 
 	<fileset id="lib.jars" dir="${lib}">
 		<include name="**/*.jar"/>
@@ -74,7 +87,7 @@
 		<pathelement path="${applejava}/AppleJavaExtensions.jar"/>
 	</path>
 	
-	<target name="compile.onejar" depends="check.properties" description="Compile onejar">
+	<target name="compile.onejar" description="Compile onejar">
 		<javac srcdir="${onejar}" destdir="${onejar}"
 			source="1.4" target="1.4"
 			failonerror="true"
@@ -82,7 +95,7 @@
 		</javac>
 	</target>
 	
-	<target name="prepare" depends="check.properties" description="Create build dirs">
+	<target name="prepare" description="Create build dirs">
 		<mkdir dir="${build}"/>
 			<mkdir dir="${bin}"/>
 			<mkdir dir="${dist}"/>
@@ -180,26 +193,83 @@
 			jar="${jarfile}"/>
 	</target>
 	<target name="dmg" depends="app" description="Make dmg" if="is.mac">
+		<property name="mac.dist" value="${name}-${new.version}.dmg"/>
+		<property name="mac.dist.full" path="${dist}/${mac.dist}"/>
 		<!-- Requires OSX -->
 		<exec dir="${dist}" executable="hdiutil">
-			<arg line="create -ov -srcfolder ${name}.app ${name}.dmg"/>
+			<arg line="create -ov -srcfolder ${name}.app ${mac.dist}"/>
 		</exec>
 	</target>
-	<target name="zip" depends="exe" description="Make zip">
-		 <zip destfile="${dist}/${name}.zip"
+	<target name="mac.zip" depends="app" description="Make mac zip" if="not.mac">
+		<property name="mac.dist" value="${name}-mac-${new.version}.zip"/>
+		<property name="mac.dist.full" path="${dist}/${mac.dist}"/>
+		<zip destfile="${mac.dist.full}"
+			basedir="${dist}"
+			includes="${name}.app" />
+	</target>
+	<target name="win.zip" depends="exe" description="Make windows zip">
+		<property name="win.dist" value="${name}-win-${new.version}.zip"/>
+		<property name="win.dist.full" path="${dist}/${win.dist}"/>
+		<zip destfile="${win.dist.full}"
 			basedir="${dist}"
 			includes="${name}.exe" />
+	</target>
+	<target name="other.zip" depends="exe" description="Make other zip">
+		<property name="other.dist" value="${name}-other-${new.version}.zip"/>
+		<property name="other.dist.full" path="${dist}/${other.dist}"/>
+		<zip destfile="${other.dist.full}"
+			basedir="${dist}"
+			includes="${name}.jar" />
 	</target>
 
 	<target name="run" depends="jar" description="Run jar file">
 		<java jar="${jarfile}" fork="yes" failonerror="true"/>
 	</target>
 
-	<target name="build" description="Build dmg,zip" depends="dmg,zip">
-		<!-- At the moment deploy requires nothing else -->
+	<target name="build" description="Build exe,app" depends="exe,app">
+		<!-- At the moment build requires nothing else -->
 	</target>
 	
-	<target name="deploy" description="Deploy Build" depends="version,build">
+	<target name="release" description="Create release dmg/zips" depends="version,mac.zip,dmg,win.zip,other.zip">
+		<!-- At the moment release requires nothing else -->
+	</target>
+
+	<target name="ftp" description="Deploy All To FTP Location" depends="release">
+		<!-- TODO -->
+	</target>
+
+	<target name="sourceforge" description="Deploy All To Sourceforge" depends="release">
+		<!-- TODO -->
+	</target>
+
+	<target name="google" description="Deploy All To GoogleCode" depends="release">
+		<gcupload 
+        	username="${google.username}" 
+	        password="${google.password}" 
+    	    projectname="${google.project}" 
+        	filename="${other.dist.full}" 
+	        targetfilename="${other.dist}"
+    	    summary="${name} All Platforms"
+        	labels="Featured, OpSys-All, OpSys-Linux, ${name}"/>
+		<gcupload 
+        	username="${google.username}" 
+	        password="${google.password}" 
+    	    projectname="${google.project}" 
+        	filename="${mac.dist.full}" 
+	        targetfilename="${mac.dist}"
+    	    summary="${name} Mac OSX"
+        	labels="Featured, OpSys-OSX, ${name}"/>
+        <gcupload 
+        	username="${google.username}" 
+	        password="${google.password}" 
+    	    projectname="${google.project}" 
+        	filename="${win.dist.full}" 
+	        targetfilename="${win.dist}"
+    	    summary="${name} Windows"
+        	labels="Featured, OpSys-Windows, ${name}"/>
+	</target>
+
+	<target name="deploy" description="Deploy to sourceforge/googlecode/ftp" depends="sourceforge,google,ftp">
 		<!-- At the moment deploy requires nothing else -->
 	</target>
 
