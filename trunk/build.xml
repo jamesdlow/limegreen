@@ -22,19 +22,29 @@
 		<property name="xcodebuild" location="${build}/xcode"/>
 			<property name="xcodeproject" location="${xcodebuild}/Limegreen Java Swing Application"/>
 
-	<condition property="googleclasspath"
+	<condition property="google.classpath"
 		value="${google};${google}/ant-googlecode-0.0.1.jar"
 		else="${google}/ant-googlecode-0.0.1.jar">
 		<not>
 			<available classname="org.apache.tools.ant.util.Base64Converter"/>
 		</not>
 	</condition>
-	<echo message="Google classpath set to ${googleclasspath}"/>
+	<echo message="Google classpath set to ${google.classpath}"/>
+	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="${google.classpath}" name="gcupload"/>
+	
+	<fileset id="sourceforge.jars" dir="${sflib}">
+		<include name="**/*.jar"/>
+	</fileset>
+	<path id="sourceforge.id">
+		<fileset refid="sourceforge.jars"/>
+		<pathelement path="${sourceforge}/sfutils-1.01RC1.jar"/>
+	</path>
+	<pathconvert property="sourceforge.classpath" pathsep=";">
+		<path refid="sourceforge.id"/>
+	</pathconvert>
+	<echo message="Sourceforge classpath set to ${sourceforge.classpath}"/>
+	<taskdef name="sfpublish" classname="org.apache.tools.ant.taskdefs.optional.sourceforge.SourceForgePublish" classpath="${sourceforge.classpath}"/>
 
-	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="${googleclasspath}" name="gcupload"/>
-	<!-- need to include other clases in this classpath 
-	<taskdef name="sfpublish" classname="org.apache.tools.ant.taskdefs.optional.sourceforge.SourceForgePublish" classpath="${sourceforge}/sfutils-1.01RC1.jar"/>
-	-->
 	<target name="compile.base64" description="Compile Base64 for versions of ant below 1.7">
 		<javac srcdir="${google}" destdir="${google}"
 			source="1.4" target="1.4"
@@ -56,10 +66,22 @@
 				<include name="**"/>
 				<exclude name="**/.svn/**"/>
 			</fileset>
+			<filterset>
+				<filter token="ProjectName" value="Template"/>
+			</filterset>
 		</copy>
-		<replace dir="${anttemplate}" token="@ProjectName@" value="Template">
-			<include name="**/*"/>
-		</replace>
+		<copy todir="${anttemplate}/tools/google">
+			<fileset dir="${google}">
+				<exclude name="**/.svn/**"/>
+			</fileset>
+		</copy>
+		<!--
+		<copy todir="${anttemplate}/tools/sourceforge">
+			<fileset dir="${sourceforge}">
+				<exclude name="**/.svn/**"/>
+			</fileset>
+		</copy>
+		-->
 	</target>
 	
 	<target name="eclipse" description="Create Eclipse Plugin" depends="build">
@@ -72,6 +94,9 @@
 				<include name="**"/>
 				<exclude name="**/.svn/**"/>
 			</fileset>
+			<filterset>
+				<filter token="ProjectName" value="«PROJECTNAMEASIDENTIFIER»"/>
+			</filterset>
 		</copy>
 		<copy todir="${xcodeproject}">
 			<fileset dir="${xcode}">
@@ -79,13 +104,22 @@
 				<exclude name="**/.svn/**"/>
 			</fileset>
 		</copy>
-		<replace dir="${xcodeproject}" token="@ProjectName@" value="«PROJECTNAMEASIDENTIFIER»">
-			<include name="**/*"/>
-		</replace>
+		<copy todir="${xcodeproject}/tools/google">
+			<fileset dir="${google}">
+				<exclude name="**/.svn/**"/>
+			</fileset>
+		</copy>
+		<!--
+		<copy todir="${xcodeproject}/tools/sourceforge">
+			<fileset dir="${sourceforge}">
+				<exclude name="**/.svn/**"/>
+			</fileset>
+		</copy>
+		-->
 	</target>
 
 	<target name="alltemplates" description="Create All" depends="ant,eclipse,xcode">
-		<!-- At the moment deploy requires nothing else -->
+		<!-- At the moment alltemplates requires nothing else -->
 	</target>
 
 	<target name="version" depends="alltemplates" description="Prompt user to enter new version">
@@ -118,25 +152,30 @@
 	</target>
 
 	<target name="sourceforge" description="Deploy All To Sourceforge" depends="release">
+		<tstamp>
+			<format property="sourceforge.date" pattern="d/M/yyyy"/>
+		</tstamp>
+		<!-- TODO
 		<sfpublish
-			releasename="my-release-1.0"
-			packagename="my-sourceforge-package-name"
+			releasename="${sourceforge.project}-${new.version}"
+			packagename="${sourceforge.project}"
 			packagehidden="no"
 			hidden="no"
-			projectshortname="samples"
+			projectshortname="${sourceforge.project}"
 			projectname="A Sample SourceForge Project"
-			username="myUsername"
-			password="myPassword"
-			releasedate="6/28/2003">
+			username="${sourceforge.username}"
+			password="${sourceforge.password}"
+			releasedate="${sourceforge.date}">
 			<filespec
-				file="/path/to/file/to/be/released"
-				filetype="other"
-				processortype="sparc"/>
+				file="${ant.zip.full}"
+				filetype="source_zip"
+				processortype="platform_independent"/>
 			<filespec
-				file="/path/to/another/file/to/be/released" 
-				filetype="gzip_file" 
+				file="${xcode.zip.full}"
+				filetype="source_zip"
 				processortype="platform_independent"/>
 		</sfpublish>
+		-->
 	</target>
 
 	<target name="google" description="Deploy All To GoogleCode" depends="release">
@@ -147,7 +186,7 @@
         	filename="${ant.zip.full}" 
 	        targetfilename="${ant.zip}"
     	    summary="Limegreen Ant Project Template"
-        	labels="Featured, Limegreen, Ant, OSX, Windows, Other"/>
+        	labels="Featured, OpSys-All, Limegreen, Ant"/>
 		<gcupload 
         	username="${google.username}" 
 	        password="${google.password}" 
@@ -155,10 +194,14 @@
         	filename="${xcode.zip.full}" 
 	        targetfilename="${xcode.zip}"
     	    summary="Limegreen Xcode Project Template"
-        	labels="Featured, Limegreen, XCode, OSX"/>
+        	labels="Featured, OpSys-OSX, Limegreen, XCode"/>
 	</target>
 	
-	<target name="delpoyall" description="Deploy All To GoogleCode And Sourceforge" depends="sourceforge,google">
+	<target name="deploy" description="Deploy All To GoogleCode And Sourceforge" depends="sourceforge,google">
 		<!-- At the moment deploy requires nothing else -->
+	</target>
+
+	<target name="clean" description="Remove build and dist directories">
+		<delete dir="${build}"/>
 	</target>
 </project>
