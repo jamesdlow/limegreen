@@ -21,7 +21,7 @@
 		<key>Template.ico</key>
 		<string>«PROJECTNAMEASIDENTIFIER».ico</string>
 		<key>src/images/Template.png</key>
-		<string>«PROJECTNAMEASIDENTIFIER».png</string>
+		<string>src/images/«PROJECTNAMEASIDENTIFIER».png</string>
 	</dict>
 </dict>
 </plist>

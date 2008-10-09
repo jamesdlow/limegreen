@@ -75,13 +75,11 @@
 				<exclude name="**/.svn/**"/>
 			</fileset>
 		</copy>
-		<!--
 		<copy todir="${anttemplate}/tools/sourceforge">
 			<fileset dir="${sourceforge}">
 				<exclude name="**/.svn/**"/>
 			</fileset>
 		</copy>
-		-->
 	</target>
 	
 	<target name="eclipse" description="Create Eclipse Plugin" depends="build">
@@ -109,13 +107,11 @@
 				<exclude name="**/.svn/**"/>
 			</fileset>
 		</copy>
-		<!--
 		<copy todir="${xcodeproject}/tools/sourceforge">
 			<fileset dir="${sourceforge}">
 				<exclude name="**/.svn/**"/>
 			</fileset>
 		</copy>
-		-->
 	</target>
 
 	<target name="alltemplates" description="Create All" depends="ant,eclipse,xcode">
@@ -155,14 +151,13 @@
 		<tstamp>
 			<format property="sourceforge.date" pattern="d/M/yyyy"/>
 		</tstamp>
-		<!-- TODO
 		<sfpublish
-			releasename="${sourceforge.project}-${new.version}"
+			releasename="${new.version}"
 			packagename="${sourceforge.project}"
 			packagehidden="no"
 			hidden="no"
 			projectshortname="${sourceforge.project}"
-			projectname="A Sample SourceForge Project"
+			projectname="Limegreen"
 			username="${sourceforge.username}"
 			password="${sourceforge.password}"
 			releasedate="${sourceforge.date}">
@@ -175,7 +170,6 @@
 				filetype="source_zip"
 				processortype="platform_independent"/>
 		</sfpublish>
-		-->
 	</target>
 
 	<target name="google" description="Deploy All To GoogleCode" depends="release">
