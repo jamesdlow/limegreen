@@ -208,7 +208,7 @@
     	    projectname="${google.project}" 
         	filename="${source.zip.full}" 
 	        targetfilename="${source.zip}"
-    	    summary="Limegreen Raw Source"
+    	    summary="Limegreen Raw Source Code"
         	labels="OpSys-OSX, Type-Source, Limegreen, Source"/>
 	</target>
 	
