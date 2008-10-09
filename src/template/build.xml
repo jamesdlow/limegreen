@@ -195,6 +195,7 @@
 	<target name="dmg" depends="app" description="Make dmg" if="is.mac">
 		<property name="mac.dist" value="${name}-${new.version}.dmg"/>
 		<property name="mac.dist.full" path="${dist}/${mac.dist}"/>
+		<property name="mac.sf.type" value="dmg"/>
 		<!-- Requires OSX -->
 		<exec dir="${dist}" executable="hdiutil">
 			<arg line="create -ov -srcfolder ${name}.app ${mac.dist}"/>
@@ -203,6 +204,7 @@
 	<target name="mac.zip" depends="app" description="Make mac zip" if="not.mac">
 		<property name="mac.dist" value="${name}-mac-${new.version}.zip"/>
 		<property name="mac.dist.full" path="${dist}/${mac.dist}"/>
+		<property name="mac.sf.type" value="binary_zip"/>
 		<zip destfile="${mac.dist.full}"
 			basedir="${dist}"
 			includes="${name}.app" />
@@ -239,7 +241,32 @@
 	</target>
 
 	<target name="sourceforge" description="Deploy All To Sourceforge" depends="release">
-		<!-- TODO -->
+		<tstamp>
+			<format property="sourceforge.date" pattern="d/M/yyyy"/>
+		</tstamp>
+		<sfpublish
+			releasename="${new.version}"
+			packagename="${sourceforge.project}"
+			packagehidden="no"
+			hidden="no"
+			projectshortname="${sourceforge.project}"
+			projectname="${sourceforge.project}"
+			username="${sourceforge.username}"
+			password="${sourceforge.password}"
+			releasedate="${sourceforge.date}">
+			<filespec
+				file="${other.dist.full}"
+				filetype="binary_zip"
+				processortype="platform_independent"/>
+			<filespec
+				file="${mac.dist.full}"
+				filetype="${mac.sf.type}"
+				processortype="any"/>
+			<filespec
+				file="${win.dist.full}"
+				filetype="binary_zip"
+				processortype="i386"/>
+		</sfpublish>
 	</target>
 
 	<target name="google" description="Deploy All To GoogleCode" depends="release">
