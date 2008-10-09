@@ -192,36 +192,47 @@
 			mainclass="${mainclass}"
 			jar="${jarfile}"/>
 	</target>
-	<target name="dmg" depends="app" description="Make dmg" if="is.mac">
+	<target name="dmg" depends="version,app" description="Make dmg" if="is.mac">
 		<property name="mac.dist" value="${name}-${new.version}.dmg"/>
-		<property name="mac.dist.full" path="${dist}/${mac.dist}"/>
+		<property name="mac.dist.full" location="${dist}/${mac.dist}"/>
 		<property name="mac.sf.type" value="dmg"/>
 		<!-- Requires OSX -->
 		<exec dir="${dist}" executable="hdiutil">
 			<arg line="create -ov -srcfolder ${name}.app ${mac.dist}"/>
 		</exec>
 	</target>
-	<target name="mac.zip" depends="app" description="Make mac zip" if="not.mac">
+	<target name="mac.zip" depends="version,app" description="Make mac zip" if="not.mac">
 		<property name="mac.dist" value="${name}-mac-${new.version}.zip"/>
-		<property name="mac.dist.full" path="${dist}/${mac.dist}"/>
+		<property name="mac.dist.full" location="${dist}/${mac.dist}"/>
 		<property name="mac.sf.type" value="binary_zip"/>
 		<zip destfile="${mac.dist.full}"
 			basedir="${dist}"
 			includes="${name}.app" />
 	</target>
-	<target name="win.zip" depends="exe" description="Make windows zip">
+	<target name="win.zip" depends="version,exe" description="Make windows zip">
 		<property name="win.dist" value="${name}-win-${new.version}.zip"/>
-		<property name="win.dist.full" path="${dist}/${win.dist}"/>
+		<property name="win.dist.full" location="${dist}/${win.dist}"/>
 		<zip destfile="${win.dist.full}"
 			basedir="${dist}"
 			includes="${name}.exe" />
 	</target>
-	<target name="other.zip" depends="exe" description="Make other zip">
+	<target name="other.zip" depends="version,jar" description="Make other zip">
 		<property name="other.dist" value="${name}-other-${new.version}.zip"/>
-		<property name="other.dist.full" path="${dist}/${other.dist}"/>
+		<property name="other.dist.full" location="${dist}/${other.dist}"/>
 		<zip destfile="${other.dist.full}"
 			basedir="${dist}"
 			includes="${name}.jar" />
+	</target>
+	<target name="source.zip" depends="version,jar" description="Make source zip">
+		<property name="source.dist" value="${name}-source-${new.version}.zip"/>
+		<property name="source.dist.full" location="${dist}/${source.dist}"/>
+		<zip destfile="${source.dist.full}">
+			<fileset dir=".">
+				<include name="**"/>
+				<exclude name="**/.svn/**"/>
+				<exclude name="**/build/**"/>
+			</fileset>
+		</zip>
 	</target>
 
 	<target name="run" depends="jar" description="Run jar file">
@@ -232,7 +243,7 @@
 		<!-- At the moment build requires nothing else -->
 	</target>
 	
-	<target name="release" description="Create release dmg/zips" depends="version,mac.zip,dmg,win.zip,other.zip">
+	<target name="release" description="Create release dmg/zips" depends="mac.zip,dmg,win.zip,other.zip,source.zip">
 		<!-- At the moment release requires nothing else -->
 	</target>
 
@@ -266,6 +277,10 @@
 				file="${win.dist.full}"
 				filetype="binary_zip"
 				processortype="i386"/>
+			<filespec
+				file="${source.dist.full}"
+				filetype="source_zip"
+				processortype="platform_independent"/>
 		</sfpublish>
 	</target>
 
@@ -277,7 +292,7 @@
         	filename="${other.dist.full}" 
 	        targetfilename="${other.dist}"
     	    summary="${name} All Platforms"
-        	labels="Featured, OpSys-All, OpSys-Linux, ${name}"/>
+        	labels="Featured, OpSys-All, OpSys-Linux, Type-Executable, ${name}"/>
 		<gcupload 
         	username="${google.username}" 
 	        password="${google.password}" 
@@ -285,7 +300,7 @@
         	filename="${mac.dist.full}" 
 	        targetfilename="${mac.dist}"
     	    summary="${name} Mac OSX"
-        	labels="Featured, OpSys-OSX, ${name}"/>
+        	labels="Featured, OpSys-OSX, Type-Executable, ${name}"/>
         <gcupload 
         	username="${google.username}" 
 	        password="${google.password}" 
@@ -293,7 +308,15 @@
         	filename="${win.dist.full}" 
 	        targetfilename="${win.dist}"
     	    summary="${name} Windows"
-        	labels="Featured, OpSys-Windows, ${name}"/>
+        	labels="Featured, OpSys-Windows, Type-Executable, ${name}"/>
+        <gcupload 
+        	username="${google.username}" 
+	        password="${google.password}" 
+    	    projectname="${google.project}" 
+        	filename="${source.dist.full}" 
+	        targetfilename="${source.dist}"
+    	    summary="${name} Source"
+        	labels="Featured, OpSys-Windows, Type-Source, ${name}"/>
 	</target>
 
 	<target name="deploy" description="Deploy to sourceforge/googlecode/ftp" depends="sourceforge,google,ftp">
