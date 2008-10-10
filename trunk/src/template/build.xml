@@ -226,13 +226,18 @@
 	<target name="source.zip" depends="version,jar" description="Make source zip">
 		<property name="source.dist" value="${name}-source-${new.version}.zip"/>
 		<property name="source.dist.full" location="${dist}/${source.dist}"/>
+		<move file="secret.properties" tofile="secret.temp.properties"/>
+		<move file="secret.example.properties" tofile="secret.properties"/>
 		<zip destfile="${source.dist.full}">
 			<fileset dir=".">
 				<include name="**"/>
 				<exclude name="**/.svn/**"/>
 				<exclude name="**/build/**"/>
+				<exclude name="secret.temp.properties"/>
 			</fileset>
 		</zip>
+		<move file="secret.properties" tofile="secret.example.properties"/>
+		<move file="secret.temp.properties" tofile="secret.properties"/>
 	</target>
 
 	<target name="run" depends="jar" description="Run jar file">

@@ -147,13 +147,18 @@
 		</zip>
 		<property name="source.zip" value="limegreen-source-${new.version}.zip"/>
 		<property name="source.zip.full" location="${build}/${source.zip}"/>
+		<move file="secret.properties" tofile="secret.temp.properties"/>
+		<move file="secret.example.properties" tofile="secret.properties"/>
 		<zip destfile="${source.zip.full}">
 			<fileset dir=".">
 				<include name="**"/>
 				<exclude name="**/.svn/**"/>
 				<exclude name="**/build/**"/>
+				<exclude name="secret.temp.properties"/>
 			</fileset>
 		</zip>
+		<move file="secret.properties" tofile="secret.example.properties"/>
+		<move file="secret.temp.properties" tofile="secret.properties"/>
 	</target>
 
 	<target name="sourceforge" description="Deploy All To Sourceforge" depends="release">
