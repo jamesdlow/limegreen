@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Template" default="jar" basedir=".">
-    <property name="props" value="build.properties"/>
-    <property file="${props}"/>
+	<property name="props" value="build.properties"/>
+	<property file="${props}"/>
 	<property name="name" value="${application.name}"/>
 	<!-- Preexisitng Directories -->
 	<property name="src" location="src"/>
@@ -305,38 +305,38 @@
 	</target>
 
 	<target name="google" description="Deploy All To GoogleCode" depends="release">
-        <gcupload 
-        	username="${google.username}" 
-	        password="${google.password}" 
-    	    projectname="${google.project}" 
-        	filename="${source.dist.full}" 
-	        targetfilename="${source.dist}"
-    	    summary="${name} Source"
-        	labels="OpSys-Windows, Type-Source, ${name}"/>
-		<gcupload 
-        	username="${google.username}" 
-	        password="${google.password}" 
-    	    projectname="${google.project}" 
-        	filename="${other.dist.full}" 
-	        targetfilename="${other.dist}"
-    	    summary="${name} All Platforms"
-        	labels="Featured, OpSys-All, OpSys-Linux, Type-Executable, ${name}"/>
-		<gcupload 
-        	username="${google.username}" 
-	        password="${google.password}" 
-    	    projectname="${google.project}" 
-        	filename="${mac.dist.full}" 
-	        targetfilename="${mac.dist}"
-    	    summary="${name} Mac OSX"
-        	labels="Featured, OpSys-OSX, Type-Executable, ${name}"/>
-        <gcupload 
-        	username="${google.username}" 
-	        password="${google.password}" 
-    	    projectname="${google.project}" 
-        	filename="${win.dist.full}" 
-	        targetfilename="${win.dist}"
-    	    summary="${name} Windows"
-        	labels="Featured, OpSys-Windows, Type-Executable, ${name}"/>
+		<gcupload
+			username="${google.username}"
+			password="${google.password}"
+			projectname="${google.project}"
+			filename="${source.dist.full}"
+			targetfilename="${source.dist}"
+			summary="${name} Source"
+			labels="OpSys-Windows, Type-Source, ${name}"/>
+		<gcupload
+			username="${google.username}"
+			password="${google.password}"
+			projectname="${google.project}"
+			filename="${other.dist.full}"
+			targetfilename="${other.dist}"
+			summary="${name} All Platforms"
+			labels="Featured, OpSys-All, OpSys-Linux, Type-Executable, ${name}"/>
+		<gcupload
+			username="${google.username}"
+			password="${google.password}"
+			projectname="${google.project}"
+			filename="${mac.dist.full}"
+			targetfilename="${mac.dist}"
+			summary="${name} Mac OSX"
+			labels="Featured, OpSys-OSX, Type-Executable, ${name}"/>
+		<gcupload
+			username="${google.username}"
+			password="${google.password}"
+			projectname="${google.project}"
+			filename="${win.dist.full}"
+			targetfilename="${win.dist}"
+			summary="${name} Windows"
+			labels="Featured, OpSys-Windows, Type-Executable, ${name}"/>
 	</target>
 
 	<target name="deploy" description="Deploy to sourceforge/googlecode/ftp" depends="sourceforge,google,ftp">
