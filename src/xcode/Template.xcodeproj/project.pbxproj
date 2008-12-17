@@ -7,28 +7,63 @@
 	objects = {
 
 /* Begin PBXBuildStyle section */
-		88230FFC05D9926E00FE8D22 /* Clean */ = {
-			isa = PBXBuildStyle;
+		1A16E90A0E95D48500BCAB30 /* google */ = {
+			isa = XCBuildConfiguration;
 			buildSettings = {
 			};
-			name = Clean;
+			name = google;
 		};
-		88230FFC05D9926E00FE8D22 /* Debug */ = {
-			isa = PBXBuildStyle;
+		1A16E9130E95D54B00BCAB30 /* sourceforge */ = {
+			isa = XCBuildConfiguration;
 			buildSettings = {
 			};
-			name = Debug;
+			name = sourceforge;
 		};
-		88230FFD05D9926E00FE8D22 /* Release */ = {
-			isa = PBXBuildStyle;
+		1A43381F0EA462F9003353A1 /* clean */ = {
+			isa = XCBuildConfiguration;
 			buildSettings = {
 			};
-			name = Release;
+			name = clean;
+		};
+		1A4338280EA464E1003353A1 /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = release;
+		};
+		1A43382D0EA4650B003353A1 /* deploy */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = deploy;
+		};
+		1A4338320EA46665003353A1 /* build */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = build;
+		};
+		1A4338360EA466A2003353A1 /* jar */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = jar;
+		};
+		1A4338390EA466E7003353A1 /* ftp */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = ftp;
 		};
 /* End PBXBuildStyle section */
 
 /* Begin PBXFileReference section */
 		886FEE5605D9BD280091015F /* build.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = build.xml; sourceTree = "<group>"; };
+		1AEEAA950EA48D9900195B0E /* build.properties */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = build.properties; sourceTree = "<group>"; };
+		1AEEAA9D0EA48DB000195B0E /* secret.properties */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = secret.properties; sourceTree = "<group>"; };
+		1AEEAAD30EA48EE000195B0E /* readme.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = readme.txt; sourceTree = "<group>"; };
+		1AEEAAD40EA48EE000195B0E /* «PROJECTNAMEASIDENTIFIER».icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = «PROJECTNAMEASIDENTIFIER».icns; sourceTree = "<group>"; };
+		1AEEAAD50EA48EE000195B0E /* «PROJECTNAMEASIDENTIFIER».ico */ = {isa = PBXFileReference; lastKnownFileType = image.ico; path = «PROJECTNAMEASIDENTIFIER».ico; sourceTree = "<group>"; };
 		886FEE5705D9BD280091015F /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
 		886FEE5905D9BD280091015F /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; path = src; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -38,6 +73,11 @@
 			isa = PBXGroup;
 			children = (
 				886FEE5605D9BD280091015F /* build.xml */,
+				1AEEAA950EA48D9900195B0E /* build.properties */,
+				1AEEAA9D0EA48DB000195B0E /* secret.properties */,
+				1AEEAAD30EA48EE000195B0E /* readme.txt */,
+				1AEEAAD40EA48EE000195B0E /* «PROJECTNAMEASIDENTIFIER».icns */,
+				1AEEAAD50EA48EE000195B0E /* «PROJECTNAMEASIDENTIFIER».ico */,
 				886FEE5905D9BD280091015F /* src */,
 				886FEE5705D9BD280091015F /* lib */,
 			);
@@ -48,7 +88,7 @@
 /* Begin PBXLegacyTarget section */
 		8823100505D9929B00FE8D22 /* «PROJECTNAMEASIDENTIFIER» */ = {
 			isa = PBXLegacyTarget;
-			buildArgumentsString = "-emacs $(ACTION)";
+			buildArgumentsString = "-emacs $(CONFIGURATION)";
 			buildConfigurationList = 0A5CE55108BBAA1100F96152 /* Build configuration list for PBXLegacyTarget "«PROJECTNAMEASIDENTIFIER»" */;
 			buildPhases = (
 			);
@@ -71,9 +111,14 @@
 			buildSettings = {
 			};
 			buildStyles = (
-				88230FFC05D9926E00FE8D22 /* Clean */,
-				88230FFC05D9926E00FE8D22 /* Debug */,
-				88230FFD05D9926E00FE8D22 /* Release */,
+				88230FFC05D9926E00FE8D22 /* clean */,
+				88230FFC05D9926E00FE8D22 /* jar */,
+				88230FFC05D9926E00FE8D22 /* build */,
+				88230FFC05D9926E00FE8D22 /* release */,
+				88230FFC05D9926E00FE8D22 /* sourceforge */,
+				88230FFC05D9926E00FE8D22 /* google */,
+				88230FFC05D9926E00FE8D22 /* ftp */,
+				88230FFC05D9926E00FE8D22 /* deploy */,
 			);
 			hasScannedForEncodings = 1;
 			mainGroup = 88230FFA05D9926E00FE8D22;
@@ -85,47 +130,117 @@
 /* End PBXProject section */
 
 /* Begin XCBuildConfiguration section */
-		0A5CE55208BBAA1100F96152 /* Clean */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				PRODUCT_NAME = "«PROJECTNAMEASIDENTIFIER»";
-			};
-			name = Clean;
-		};
-		0A5CE55208BBAA1100F96152 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				PRODUCT_NAME = "«PROJECTNAMEASIDENTIFIER»";
-			};
-			name = Debug;
-		};
-		0A5CE55308BBAA1100F96152 /* Release */ = {
+		1A43381D0EA462F9003353A1 /* clean */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
 				PRODUCT_NAME = "«PROJECTNAMEASIDENTIFIER»";
 			};
-			name = Release;
+			name = clean;
 		};
-		0A5CE55608BBAA1100F96152 /* Debug */ = {
+		1A43381F0EA462F9003353A1 /* clean */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 			};
-			name = Clean;
+			name = clean;
 		};
-		0A5CE55608BBAA1100F96152 /* Debug */ = {
+		1A4338340EA466A2003353A1 /* jar */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				PRODUCT_NAME = "«PROJECTNAMEASIDENTIFIER»";
+			};
+			name = jar;
+		};
+		1A4338360EA466A2003353A1 /* jar */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 			};
-			name = Debug;
+			name = jar;
 		};
-		0A5CE55708BBAA1100F96152 /* Release */ = {
+		1A4338300EA46665003353A1 /* build */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				PRODUCT_NAME = "«PROJECTNAMEASIDENTIFIER»";
+			};
+			name = build;
+		};
+		1A4338320EA46665003353A1 /* build */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 			};
-			name = Release;
+			name = build;
+		};
+		1A4338260EA464E1003353A1 /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				PRODUCT_NAME = "«PROJECTNAMEASIDENTIFIER»";
+			};
+			name = release;
+		};
+		1A4338280EA464E1003353A1 /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = release;
+		};
+		1A16E9110E95D54B00BCAB30 /* sourceforge */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				PRODUCT_NAME = "«PROJECTNAMEASIDENTIFIER»";
+			};
+			name = sourceforge;
+		};
+		1A16E9130E95D54B00BCAB30 /* sourceforge */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = sourceforge;
+		};
+		1A16E9080E95D48500BCAB30 /* google */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				PRODUCT_NAME = "«PROJECTNAMEASIDENTIFIER»";
+			};
+			name = google;
+		};
+		1A16E90A0E95D48500BCAB30 /* google */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = google;
+		};
+		1A4338370EA466E7003353A1 /* ftp */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				PRODUCT_NAME = "«PROJECTNAMEASIDENTIFIER»";
+			};
+			name = ftp;
+		};
+		1A4338390EA466E7003353A1 /* ftp */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = ftp;
+		};
+		1A43382B0EA4650B003353A1 /* deploy */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				PRODUCT_NAME = "«PROJECTNAMEASIDENTIFIER»";
+			};
+			name = deploy;
+		};
+		1A43382D0EA4650B003353A1 /* deploy */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = deploy;
 		};
 /* End XCBuildConfiguration section */
 
@@ -133,22 +248,32 @@
 		0A5CE55108BBAA1100F96152 /* Build configuration list for PBXLegacyTarget "«PROJECTNAMEASIDENTIFIER»" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				0A5CE55208BBAA1100F96152 /* Clean */,
-				0A5CE55208BBAA1100F96152 /* Debug */,
-				0A5CE55308BBAA1100F96152 /* Release */,
+				1A43381D0EA462F9003353A1 /* clean */,
+				1A4338340EA466A2003353A1 /* jar */,				
+				1A4338300EA46665003353A1 /* build */,
+				1A4338260EA464E1003353A1 /* release */,
+				1A16E9110E95D54B00BCAB30 /* sourceforge */,			
+				1A16E9080E95D48500BCAB30 /* google */,
+				1A4338370EA466E7003353A1 /* ftp */,
+				1A43382B0EA4650B003353A1 /* deploy */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = build;
 		};
-		0A5CE55508BBAA1100F96152 /* Build configuration list for PBXProject "RunJar" */ = {
+		0A5CE55508BBAA1100F96152 /* Build configuration list for PBXProject "«PROJECTNAMEASIDENTIFIER»" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				0A5CE55608BBAA1100F96152 /* Clean */,
-				0A5CE55608BBAA1100F96152 /* Debug */,
-				0A5CE55708BBAA1100F96152 /* Release */,
+				1A43381F0EA462F9003353A1 /* clean */,
+				1A4338360EA466A2003353A1 /* jar */,
+				1A4338320EA46665003353A1 /* build */,
+				1A4338280EA464E1003353A1 /* release */,
+				1A16E9130E95D54B00BCAB30 /* sourceforge */,	
+				1A16E90A0E95D48500BCAB30 /* google */,
+				1A4338390EA466E7003353A1 /* ftp */,
+				1A43382D0EA4650B003353A1 /* deploy */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = build;
 		};
 /* End XCConfigurationList section */
 	};

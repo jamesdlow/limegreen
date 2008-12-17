@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="@ProjectName@" default="jar" basedir=".">
+<project name="Template" default="jar" basedir=".">
     <property name="props" value="build.properties"/>
     <property file="${props}"/>
 	<property name="name" value="${application.name}"/>
@@ -47,6 +47,12 @@
 	</condition>
 	<condition property="include.do">
 		<isfalse value="${onejar.use}"/>
+	</condition>
+	<condition property="version.do">
+		<istrue value="${build.doversion}"/>
+	</condition>
+	<condition property="version.default">
+		<isfalse value="${build.doversion}"/>
 	</condition>
 	<condition property="mainclass" value="com.simontuffs.onejar.Boot">
 		<istrue value="${onejar.use}"/>
@@ -106,14 +112,23 @@
 			<mkdir dir="${exe}"/>
 	</target>
 	
-	<target name="version" depends="prepare" description="Prompt user to enter new version">
-		 <input
+	<target name="version.input" depends="prepare" if="version.do">
+		<input
 			message="Please input a new version. Current version ${build.version}"
 			addproperty="new.version"
 		 />
 		<propertyfile file="${props}">
 			<entry key="build.version" value="${new.version}"/>
 		</propertyfile>
+		<condition property="version.default">
+			<equals arg1="${new.doversion}" arg2=""/>
+		</condition>
+	</target>
+	<target name="version.default" depends="version.input">
+		<property name="new.version" value="${build.version}"/>
+	</target>
+	<target name="version" depends="version.input,version.default" description="Prompt user to enter new version">
+		<!-- At the moment version requires nothing else -->
 	</target>
 	
 	<target name="create.jsmooth" depends="prepare" description="Create JSmooth config file">
@@ -129,7 +144,7 @@
 		<javac srcdir="${src}" destdir="${bin}"
 			source="${build.jvm}" target="${build.jvm}"
 			failonerror="true"
-        	includes="**/*.*"
+			includes="**/*.*"
 			classpathref="lib.path">
 		</javac>
 		<propertyfile file="${props}">
@@ -227,7 +242,7 @@
 		<property name="source.dist" value="${name}-source-${new.version}.zip"/>
 		<property name="source.dist.full" location="${dist}/${source.dist}"/>
 		<move file="secret.properties" tofile="secret.temp.properties"/>
-		<move file="secret.example.properties" tofile="secret.properties"/>
+		<copy file="secret.example.properties" tofile="secret.properties"/>
 		<zip destfile="${source.dist.full}">
 			<fileset dir=".">
 				<include name="**"/>
@@ -236,7 +251,7 @@
 				<exclude name="secret.temp.properties"/>
 			</fileset>
 		</zip>
-		<move file="secret.properties" tofile="secret.example.properties"/>
+		<delete file="secret.properties"/>
 		<move file="secret.temp.properties" tofile="secret.properties"/>
 	</target>
 
@@ -271,6 +286,10 @@
 			password="${sourceforge.password}"
 			releasedate="${sourceforge.date}">
 			<filespec
+				file="${source.dist.full}"
+				filetype="source_zip"
+				processortype="platform_independent"/>
+			<filespec
 				file="${other.dist.full}"
 				filetype="binary_zip"
 				processortype="platform_independent"/>
@@ -282,14 +301,18 @@
 				file="${win.dist.full}"
 				filetype="binary_zip"
 				processortype="i386"/>
-			<filespec
-				file="${source.dist.full}"
-				filetype="source_zip"
-				processortype="platform_independent"/>
 		</sfpublish>
 	</target>
 
 	<target name="google" description="Deploy All To GoogleCode" depends="release">
+        <gcupload 
+        	username="${google.username}" 
+	        password="${google.password}" 
+    	    projectname="${google.project}" 
+        	filename="${source.dist.full}" 
+	        targetfilename="${source.dist}"
+    	    summary="${name} Source"
+        	labels="OpSys-Windows, Type-Source, ${name}"/>
 		<gcupload 
         	username="${google.username}" 
 	        password="${google.password}" 
@@ -314,14 +337,6 @@
 	        targetfilename="${win.dist}"
     	    summary="${name} Windows"
         	labels="Featured, OpSys-Windows, Type-Executable, ${name}"/>
-        <gcupload 
-        	username="${google.username}" 
-	        password="${google.password}" 
-    	    projectname="${google.project}" 
-        	filename="${source.dist.full}" 
-	        targetfilename="${source.dist}"
-    	    summary="${name} Source"
-        	labels="Featured, OpSys-Windows, Type-Source, ${name}"/>
 	</target>
 
 	<target name="deploy" description="Deploy to sourceforge/googlecode/ftp" depends="sourceforge,google,ftp">
