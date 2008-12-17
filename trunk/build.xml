@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Limegreen" default="alltemplates" basedir=".">
+<!-- This doesn't work for Xcode right now: <project name="@ProjectName@" default="jar" basedir="."> -->
     <property name="props" value="build.properties"/>
     <property file="${props}"/>
     <property name="secret" value="secret.properties"/>
@@ -20,7 +21,17 @@
 			<property name="anttemplate" location="${antbuild}/Template"/>
 		<property name="eclipsebuild" location="${build}/eclipse"/>
 		<property name="xcodebuild" location="${build}/xcode"/>
-			<property name="xcodeproject" location="${xcodebuild}/Limegreen Java Swing Application"/>
+			<property name="xcodetemplate" value="Limegreen Java Swing Application"/>
+			<property name="xcodeproject" location="${xcodebuild}/${xcodetemplate}"/>
+	<property name="localprojects" location="/Library/Application Support/Apple/Developer Tools/Project Templates/Java"/>
+			<property name="localtemplate" location="${localprojects}/${xcodetemplate}"/>
+
+	<condition property="version.do">
+		<istrue value="${build.doversion}"/>
+	</condition>
+	<condition property="version.default">
+		<isfalse value="${build.doversion}"/>
+	</condition>
 
 	<condition property="google.classpath"
 		value="${google};${google}/ant-googlecode-0.0.1.jar"
@@ -118,14 +129,23 @@
 		<!-- At the moment alltemplates requires nothing else -->
 	</target>
 
-	<target name="version" depends="alltemplates" description="Prompt user to enter new version">
-		 <input
+	<target name="version.input" depends="alltemplates" if="version.do">
+		<input
 			message="Please input a new version. Current version ${build.version}"
 			addproperty="new.version"
 		 />
 		<propertyfile file="${props}">
 			<entry key="build.version" value="${new.version}"/>
 		</propertyfile>
+		<condition property="version.default">
+			<equals arg1="${new.doversion}" arg2=""/>
+		</condition>
+	</target>
+	<target name="version.default" depends="version.input">
+		<property name="new.version" value="${build.version}"/>
+	</target>
+	<target name="version" depends="version.input,version.default" description="Prompt user to enter new version">
+		<!-- At the moment version requires nothing else -->
 	</target>
 
 	<target name="release" depends="version" description="Create a new release of plugins">
@@ -148,7 +168,7 @@
 		<property name="source.zip" value="limegreen-source-${new.version}.zip"/>
 		<property name="source.zip.full" location="${build}/${source.zip}"/>
 		<move file="secret.properties" tofile="secret.temp.properties"/>
-		<move file="secret.example.properties" tofile="secret.properties"/>
+		<copy file="secret.example.properties" tofile="secret.properties"/>
 		<zip destfile="${source.zip.full}">
 			<fileset dir=".">
 				<include name="**"/>
@@ -157,7 +177,7 @@
 				<exclude name="secret.temp.properties"/>
 			</fileset>
 		</zip>
-		<move file="secret.properties" tofile="secret.example.properties"/>
+		<delete file="secret.properties"/>
 		<move file="secret.temp.properties" tofile="secret.properties"/>
 	</target>
 
@@ -176,7 +196,7 @@
 			password="${sourceforge.password}"
 			releasedate="${sourceforge.date}">
 			<filespec
-				file="${ant.zip.full}"
+				file="${source.zip.full}"
 				filetype="source_zip"
 				processortype="platform_independent"/>
 			<filespec
@@ -184,7 +204,7 @@
 				filetype="source_zip"
 				processortype="platform_independent"/>
 			<filespec
-				file="${source.zip.full}"
+				file="${ant.zip.full}"
 				filetype="source_zip"
 				processortype="platform_independent"/>
 		</sfpublish>
@@ -195,10 +215,10 @@
         	username="${google.username}" 
 	        password="${google.password}" 
     	    projectname="${google.project}" 
-        	filename="${ant.zip.full}" 
-	        targetfilename="${ant.zip}"
-    	    summary="Limegreen Ant Project Template"
-        	labels="Featured, OpSys-All, Type-Source, Limegreen, Ant"/>
+        	filename="${source.zip.full}" 
+	        targetfilename="${source.zip}"
+    	    summary="Limegreen Raw Source Code"
+        	labels="OpSys-OSX, Type-Source, Limegreen, Source"/>
 		<gcupload 
         	username="${google.username}" 
 	        password="${google.password}" 
@@ -211,14 +231,23 @@
         	username="${google.username}" 
 	        password="${google.password}" 
     	    projectname="${google.project}" 
-        	filename="${source.zip.full}" 
-	        targetfilename="${source.zip}"
-    	    summary="Limegreen Raw Source Code"
-        	labels="OpSys-OSX, Type-Source, Limegreen, Source"/>
+        	filename="${ant.zip.full}" 
+	        targetfilename="${ant.zip}"
+    	    summary="Limegreen Ant Project Template"
+        	labels="Featured, OpSys-All, Type-Source, Limegreen, Ant"/>
 	</target>
 	
 	<target name="deploy" description="Deploy All To GoogleCode And Sourceforge" depends="sourceforge,google">
 		<!-- At the moment deploy requires nothing else -->
+	</target>
+
+	<target name="xcode.delete"  description="Delete Local Xcode Template">
+		<delete dir="${localtemplate}"/>
+	</target>
+	<target name="xcode.deploy"  description="Deploy Xcode Template Locally" depends="xcode.delete,xcode">
+		<copy todir="${localtemplate}">
+			<fileset dir="${xcodeproject}"/>
+		</copy>
 	</target>
 
 	<target name="clean" description="Remove build and dist directories">
