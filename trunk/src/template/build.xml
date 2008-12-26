@@ -207,7 +207,19 @@
 			mainclass="${mainclass}"
 			jar="${jarfile}"/>
 	</target>
-	<target name="dmg" depends="version,app" description="Make dmg" if="is.mac">
+	<target name="mac.zip" depends="version,app" description="Make mac zip">
+		<property name="mac.zip" value="${name}-mac-${new.version}.zip"/>
+		<property name="mac.zip.full" location="${dist}/${mac.zip}"/>
+		<zip destfile="${mac.zip.full}"
+			basedir="${dist}"
+			includes="${name}.app" />
+	</target>
+	<target name="notdmg" description="Set distribution if not using dmg" if="not.mac">
+		<property name="mac.dist" value="${mac.zip}"/>
+		<property name="mac.dist.full" location="${mac.zip.full}"/>
+		<property name="mac.sf.type" value="binary_zip"/>
+	</target>
+	<target name="dmg" depends="mac.zip" description="Make dmg" if="is.mac">
 		<property name="mac.dist" value="${name}-${new.version}.dmg"/>
 		<property name="mac.dist.full" location="${dist}/${mac.dist}"/>
 		<property name="mac.sf.type" value="dmg"/>
@@ -215,14 +227,6 @@
 		<exec dir="${dist}" executable="hdiutil">
 			<arg line="create -ov -srcfolder ${name}.app ${mac.dist}"/>
 		</exec>
-	</target>
-	<target name="mac.zip" depends="version,app" description="Make mac zip" if="not.mac">
-		<property name="mac.dist" value="${name}-mac-${new.version}.zip"/>
-		<property name="mac.dist.full" location="${dist}/${mac.dist}"/>
-		<property name="mac.sf.type" value="binary_zip"/>
-		<zip destfile="${mac.dist.full}"
-			basedir="${dist}"
-			includes="${name}.app" />
 	</target>
 	<target name="win.zip" depends="version,exe" description="Make windows zip">
 		<property name="win.dist" value="${name}-win-${new.version}.zip"/>
@@ -263,7 +267,7 @@
 		<!-- At the moment build requires nothing else -->
 	</target>
 	
-	<target name="release" description="Create release dmg/zips" depends="mac.zip,dmg,win.zip,other.zip,source.zip">
+	<target name="release" description="Create release dmg/zips" depends="dmg,win.zip,other.zip,source.zip">
 		<!-- At the moment release requires nothing else -->
 	</target>
 
