@@ -1,10 +1,14 @@
 package com.jameslow;
 
-import java.awt.Font;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.io.*;
 import java.util.*;
+
+import javax.swing.JFileChooser;
 import javax.swing.UIManager;
+
+import com.jameslow.FileUtils.Filefilter;
+import com.jameslow.limelight.LimelightSettings;
 
 //Other:
 //ALLUSERPROFILE (XP) /Users/Shared on OSX
@@ -107,16 +111,65 @@ public class OSSpecific {
 		}
 	}
 	public void openFile(String file) {
-		//TODO: Implement For Linux
+		//TODO: Implement For Unix based OS
 	}
 	public void openFolder(String folder) {
-		//TODO: Implement For Linux
+		//TODO: Implement For Unix based OS
 	}
 	public ResourceBundle getMainProps() {
 		return main;
 	}
 	public ResourceBundle getBuildProps() {
 		return build;
+	}
+	
+	//Save / Open dialogs
+	public File openFileDialog(Frame parent) {
+		return openFileDialog(parent,false);
+	}
+	public File openFileDialog(Frame parent, boolean dirsonly) {
+		return openFileDialog(parent,dirsonly,null);
+	}
+	public File openFileDialog(Frame parent, boolean dirsonly, String title) {
+		return openFileDialog(parent,dirsonly,title,null);
+	}
+	public File openFileDialog(Frame parent, boolean dirsonly, String title, String dir) {
+		return openFileDialog(parent,dirsonly,title,dir,new Filefilter[0]);
+	}
+	public File openFileDialog(Frame parent, boolean dirsonly, String title, String dir, Filefilter[] filters) {
+		return saveOpenFileDialog(parent,dirsonly,title,dir,filters,false);
+	}
+	protected File saveOpenFileDialog(Frame parent, boolean dirsonly, String title, String dir, Filefilter[] filters, boolean save) {
+		JFileChooser fc = new JFileChooser(dir);
+		if (dirsonly) {
+			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		}
+		for (int i=0; i<filters.length; i++) {
+			fc.addChoosableFileFilter(FileUtils.getExtFileFilter(filters[i]));
+		}
+		if (title != null) {
+			fc.setDialogTitle(title);
+		}
+		if (save) {
+			fc.setDialogType(JFileChooser.SAVE_DIALOG);
+		}
+		int returnVal = fc.showOpenDialog(parent);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            return fc.getSelectedFile();
+        }
+        return null;
+	}
+	public File saveFileDialog(Frame parent) {
+		return saveFileDialog(parent,null);
+	}
+	public File saveFileDialog(Frame parent, String title) {
+		return saveFileDialog(parent,title,null);
+	}
+	public File saveFileDialog(Frame parent, String title, String dir) {
+		return saveFileDialog(parent,title,dir,new Filefilter[0]);
+	}
+	public File saveFileDialog(Frame parent, String title, String dir, Filefilter[] filters) {
+		return saveOpenFileDialog(parent,false,title,dir,filters,true);
 	}
 	
 	//Constants

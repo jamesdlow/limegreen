@@ -1,7 +1,11 @@
 package com.jameslow;
 
+import java.awt.event.ActionEvent;
 import java.io.*;
 import java.net.MalformedURLException;
+
+import javax.swing.AbstractAction;
+import javax.swing.JFrame;
 
 public class FileUtils {
 	public static FilenameFilter getHiddenDirFilter() {
@@ -11,6 +15,43 @@ public class FileUtils {
 				return file.isFile() && !file.isHidden();
 			}
 		};
+	}
+	public static class Filefilter {
+		private String[] exts;
+		private String description;
+		public Filefilter(String[] exts, String description) {
+			this.exts = exts;
+			this.description = description;
+		}
+		private String[] getExts() {
+			return exts;
+		}
+		private String getDescription() {
+			return description;
+		}
+	}
+	public static java.io.FilenameFilter getExtFilenameFilter(Filefilter filter) {
+		return getExtFilenameFilter(filter.exts,filter.description);
+	}
+	public static java.io.FilenameFilter getExtFilenameFilter(final String[] exts,final String description) {
+		return new java.io.FilenameFilter() {
+			public boolean accept(File dir, String name) {
+				//if(f.isDirectory()) {
+				//	return true;
+				//} else {
+					String ext = getExt(name);
+					for(int i=0; i<exts.length; i++) {
+						if (exts[i].compareTo(ext) == 0) {
+							return true;
+						}
+					}
+					return false;
+				//}
+			}
+		};
+	}
+	public static javax.swing.filechooser.FileFilter getExtFileFilter(Filefilter filter) {
+		return getExtFileFilter(filter.exts,filter.description);
 	}
 	public static javax.swing.filechooser.FileFilter getExtFileFilter(final String[] exts,final String description) {
 		return new javax.swing.filechooser.FileFilter() {

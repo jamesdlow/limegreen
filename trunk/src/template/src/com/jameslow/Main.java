@@ -51,7 +51,7 @@ public class Main {
 	}
 	public static void preferences() {
 		if (pref == null) {
-			Component parent = null;
+			JFrame parent = null;
 			if (window.isVisible()) {
 				parent = window;
 			}
@@ -61,6 +61,7 @@ public class Main {
 			} else {
 				panel = (PrefPanel) newInstance(prefclass);
 			}
+			panel.setParentFrame(parent);
 			int result = JOptionPane.showConfirmDialog(parent,panel,"Preferences",JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE,new ImageIcon());
 			if (result == JOptionPane.OK_OPTION) {
 				panel.savePreferences();
