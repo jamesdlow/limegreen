@@ -1,10 +1,16 @@
 package com.jameslow;
 
+import java.awt.Component;
+import java.awt.FileDialog;
+import java.awt.Frame;
 import java.io.*;
+
+import javax.swing.JFileChooser;
 
 import com.apple.eawt.Application;
 import com.apple.eawt.ApplicationEvent;
 import com.apple.eio.FileManager;
+import com.jameslow.FileUtils.Filefilter;
 
 public class OSSpecificOSX extends OSSpecific {
 	private static final String LIBRARY = "Library";
@@ -73,6 +79,34 @@ public class OSSpecificOSX extends OSSpecific {
 		}
 		*/
 	}
+	protected File saveOpenFileDialog(Frame parent, boolean dirsonly, String title, String dir, Filefilter[] filters, boolean save) {
+		if (filters.length > 1) {
+			return super.saveOpenFileDialog(parent, dirsonly, title, dir, filters, save);
+		} else {
+			FileDialog dialog = new FileDialog(parent,title,(save ? FileDialog.SAVE : FileDialog.LOAD));
+			if (dir == null) {
+				dialog.setDirectory(homeDir());
+			} else {
+				dialog.setDirectory(dir);	
+			}
+			if (filters.length > 0) {
+				dialog.setFilenameFilter(FileUtils.getExtFilenameFilter(filters[0]));
+			}
+			if (dirsonly) {
+				System.setProperty("apple.awt.fileDialogForDirectories", "true");
+			} else {
+				System.setProperty("apple.awt.fileDialogForDirectories", "false"); //Make sure this is set, incase other code hasn't cleaned up
+			}
+			dialog.show();
+			System.setProperty("apple.awt.fileDialogForDirectories", "false"); //Always make sure we clean up
+			String filename = dialog.getFile();
+			if (filename != null) {
+				return new File(filename);
+			}
+			return null;
+		}
+	}
+	
 	public boolean addQuit() {
 		return false;
 	}
