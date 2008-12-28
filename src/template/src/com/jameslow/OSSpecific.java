@@ -8,7 +8,6 @@ import javax.swing.JFileChooser;
 import javax.swing.UIManager;
 
 import com.jameslow.FileUtils.Filefilter;
-import com.jameslow.limelight.LimelightSettings;
 
 //Other:
 //ALLUSERPROFILE (XP) /Users/Shared on OSX
