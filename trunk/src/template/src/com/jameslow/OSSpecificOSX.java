@@ -99,7 +99,7 @@ public class OSSpecificOSX extends OSSpecific {
 			}
 			dialog.show();
 			System.setProperty("apple.awt.fileDialogForDirectories", "false"); //Always make sure we clean up
-			String filename = dialog.getFile();
+			String filename = dialog.getDirectory() + fileSeparator() + dialog.getFile();
 			if (filename != null) {
 				return new File(filename);
 			}
