@@ -28,7 +28,7 @@ public class OSSpecificOSX extends OSSpecific {
 	public void setLogDir() {
 		String s = fileSeparator();
 		logdir = homeDir() + s + LIBRARY + s + LOGS + s + appName();
-	}	
+	}
 	public void preSwing() {
 		try {
 			//need to do this before we make any calls to AWT or Swing functions

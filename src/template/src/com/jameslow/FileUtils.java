@@ -121,8 +121,8 @@ public class FileUtils {
 		}
 	}
 	public static void WriteStream(InputStream in, OutputStream out) {
-        try {
-        	int c;
+		try {
+			int c;
 			while ((c = in.read()) != -1) {
 			    out.write(c);
 			}
