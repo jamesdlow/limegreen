@@ -35,6 +35,7 @@ public class OSSpecific {
 	protected String appname;
 	protected String settingsdir;
 	protected String logdir;
+	protected String tempdir;
 	
 	protected OSSpecific() {
 		homedir = properties.getProperty("user.home");
@@ -44,13 +45,14 @@ public class OSSpecific {
 		appname = build.getString("application.name");
 		setSettingsDir();
 		setLogDir();
+		setTempDir();
 		this.preSwing();
 			shortcutkey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 			setFont();
 			//try {
 				//UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 				//"apple.laf.AquaLookAndFeel"
-				//"com.sun.java.swing.plaf.gtk.GTKLookAndFeel" //Linux should return this as the dfault, but it doesn't
+				//"com.sun.java.swing.plaf.gtk.GTKLookAndFeel" //Linux should return this as the default, but it doesn't
 				//"com.sun.java.swing.plaf.motif.MotifLookAndFeel"
 				//"com.sun.java.swing.plaf.windows.WindowsLookAndFeel"
 				//"com.sun.java.swing.plaf.windows.WindowsClassicLookAndFeel"
@@ -90,6 +92,9 @@ public class OSSpecific {
 	}
 	public void setLogDir() {
 		logdir = settingsdir;
+	}
+	public void setTempDir() {
+		tempdir = System.getProperty("java.io.tmpdir");
 	}
 	
 	//Helper Functions
@@ -195,6 +200,9 @@ public class OSSpecific {
 	}
 	public String logDir() {
 		return logdir;
+	}
+	public String tempDir() {
+		return tempdir;
 	}
 	public boolean addQuit() {
 		return true;

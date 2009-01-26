@@ -212,7 +212,7 @@
 		<property name="mac.zip.full" location="${dist}/${mac.zip}"/>
 		<zip destfile="${mac.zip.full}"
 			basedir="${dist}"
-			includes="${name}.app" />
+			includes="${name}.app/**" />
 	</target>
 	<target name="notdmg" description="Set distribution if not using dmg" if="not.mac">
 		<property name="mac.dist" value="${mac.zip}"/>
