@@ -195,9 +195,9 @@ public class Settings {
 			return manifest;
 		} catch (Exception e) {
 			try {
-				String pathToThisClass = Main.class.getResource("/com/jameslow/Main.class").toString();
-		        String manifestPath = pathToThisClass.substring(0, pathToThisClass.lastIndexOf("!") + 1) + "/META-INF/MANIFEST.MF";
-	        	manifest = new Manifest(new URL(manifestPath).openStream());
+				String pathToThisClass = Main.class.getResource("/"+Main.class.getName().replaceAll("\\.", "/")+".class").toString();
+				String manifestPath = pathToThisClass.substring(0, pathToThisClass.lastIndexOf("!") + 1) + "/META-INF/MANIFEST.MF";
+				manifest = new Manifest(new URL(manifestPath).openStream());
 			} catch (Exception e2) {
 				Main.Logger().warning("Cannot get manifest file: " + e2.getMessage());
 				return null;
