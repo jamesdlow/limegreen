@@ -174,7 +174,8 @@ public class Main {
 					}
 				}
 			};
-			autoupdate = new AutoUpdate(settings.getTitle(), settings.getUpdateUrl(), settings.getVersion(), settings.getBuild(),
+			autoupdate = new AutoUpdate();
+			autoupdate.checkForUpdates(settings.getTitle(), settings.getUpdateUrl(), settings.getVersion(), settings.getBuild(),
 					settings.getAllowMinor(), settings.getAllowExperimental(), settings.getAllowAutoUpdate(),
 					settings.getMinor(), settings.getExperimental(), settings.getAutoUpdate(),
 					update, cancel);
