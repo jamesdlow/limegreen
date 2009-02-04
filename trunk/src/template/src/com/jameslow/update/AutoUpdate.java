@@ -122,6 +122,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 					window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 					window.show();
 				} else {
+					//TODO: Not sure if we need to make sure number is correct
 					cancellistener.actionPerformed(new ActionEvent(this,0,""));
 				}
 			//} catch (IOException e) {
