@@ -1,13 +1,17 @@
 package com.jameslow;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.util.logging.*;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
+import com.jameslow.update.*;
+
 public class Main {
 	protected static OSSpecific os;
 	protected static Settings settings;
+	protected static AutoUpdate autoupdate;
 	protected static AbstractWindow window;
 	protected static AbstractWindow pref;
 	protected static String prefclass;
@@ -126,7 +130,7 @@ public class Main {
 	public Main(String args[]) {
 		this(args,null,null,null,null,null,null,null);
 	}
-	public Main(String args[], String cmd_name, OSSpecific os_name, String settings_name, String window_name, String logger_name, String about_name, String pref_name) {
+	public Main(String args[], String cmd_name, OSSpecific os_name, String settings_name, final String window_name, String logger_name, String about_name, String pref_name) {
 		if (cmd == null) {
 			cmd = new CommandLine(args);
 		}
@@ -152,15 +156,35 @@ public class Main {
 			aboutclass = about_name;
 			prefclass = pref_name;
 			
-			if (!cmd.getQuiet()) {
-				if (window_name == null) {
-					window = new MainWindow();
-				} else {
-					window = (AbstractWindow) newInstance(window_name);
+			ActionListener update = new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					saveUpdateSettings();
 				}
-				window.setVisible(window.getWindowSettings().getVisible());
-			}
+			};
+			ActionListener cancel = new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					saveUpdateSettings();
+					if (!cmd.getQuiet()) {
+						if (window_name == null) {
+							window = new MainWindow();
+						} else {
+							window = (AbstractWindow) newInstance(window_name);
+						}
+						window.setVisible(window.getWindowSettings().getVisible());
+					}
+				}
+			};
+			autoupdate = new AutoUpdate(settings.getTitle(), settings.getUpdateUrl(), settings.getVersion(), settings.getBuild(),
+					settings.getAllowMinor(), settings.getAllowExperimental(), settings.getAllowAutoUpdate(),
+					settings.getMinor(), settings.getExperimental(), settings.getAutoUpdate(),
+					update, cancel);
 		}
+	}
+	private static void saveUpdateSettings() {
+		settings.setAutoUpdate(autoupdate.getCheckForUpdates());
+		settings.setExperimental(autoupdate.getIncludeExperiemental());
+		settings.setMinor(autoupdate.getIncludeMinor());
+		settings.saveSettings();
 	}
 	public static void main(String args[]) {
 		instance = new Main(args);
