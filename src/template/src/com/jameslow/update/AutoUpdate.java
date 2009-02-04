@@ -54,7 +54,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 	//We're at the checking for updates stage
 	//Consuming classes should implement an ActionListener for when the auto update proceeds and cancelled
 	//Consuming classes can check if the user has checked check for updates in the future by calling getCheckForUpdates(), this can then be saved as a setting
-	public AutoUpdate(String appname, String url, String version, int build,
+	public void checkForUpdates(String appname, String url, String version, int build,
 				boolean allowminor, boolean allowexperimental, boolean allowautoupdate,
 				boolean minor, boolean experimental, boolean autoupdate,
 				ActionListener update, ActionListener cancel) {
@@ -65,64 +65,68 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 			cancellistener = cancel;
 			updatelistener = update;
 			this.appname = appname;
-			try {
+			//try {
 				//Get and parse XML
 				//String versionxml = new String(getHttpContent(url));
 				//TODO: parse xml / compare versions / get download file
 				//TODO: This needs to account for if we happen to be in a jar on any of the platforms in terms of search for -other- or -win- or -mac file
+				boolean needtoupdate = true;
 				if (allowexperimental && experimental) {
 					
 				}
 				if (allowminor && minor) {
 					
 				}
-				download = "http://jameslow.com/content/software/Limelight-mac-0.3.zip";
-				
-				//Construct window
-				int width = 550;
-				int height = 350;
-				GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-				Point center = ge.getCenterPoint();
-				window = new JFrame(AUTOUPDATE + " - " + appname);
-					Container pane = window.getContentPane();
-					JTextArea box = new JTextArea();
-						box.setEnabled(false);
-					pane.add(box,BorderLayout.CENTER);
-					checkpanel = new JPanel();
-						checkforupdatesbutton = new JCheckBox("Check for updates?",autoupdate);
-							checkforupdatesbutton.addItemListener(this);
-						checkpanel.add(checkforupdatesbutton);
-						if (allowexperimental) {
-							includeexperimentalbutton = new JCheckBox("Include Experimental?",experimental);
-								includeexperimentalbutton.addItemListener(this);
-							checkpanel.add(includeexperimentalbutton);
-						}
-						if (allowminor) {
-							includeminorbutton = new JCheckBox("Include Minor?",minor);
-								includeminorbutton.addItemListener(this);
-							checkpanel.add(includeminorbutton);
-						}
-						cancelbutton = new JButton("Cancel");
-							cancelbutton.addActionListener(this);
-						checkpanel.add(cancelbutton);
-						updatebutton = new JButton("Update");
-							updatebutton.addActionListener(this);
-						checkpanel.add(updatebutton);
-					pane.add(checkpanel,BorderLayout.SOUTH);
-					installpanel = new JPanel();
-						progressBar = new JProgressBar();
-						installpanel.add(progressBar,BorderLayout.CENTER);
-						installbutton = new JButton("Install and relaunch");
-							installbutton.addActionListener(this);
-							installbutton.setEnabled(false);
-						installpanel.add(installbutton, BorderLayout.WEST);
-				window.setBounds((int) (center.getX() - width/2),(int) (center.getY() - height/2), width, height);
-				window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				window.show();
+				if (needtoupdate) {
+					download = "http://jameslow.com/content/software/Limelight-mac-0.3.zip";
+					
+					//Construct window
+					int width = 550;
+					int height = 350;
+					GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+					Point center = ge.getCenterPoint();
+					window = new JFrame(AUTOUPDATE + " - " + appname);
+						Container pane = window.getContentPane();
+						JTextArea box = new JTextArea();
+							box.setEnabled(false);
+						pane.add(box,BorderLayout.CENTER);
+						checkpanel = new JPanel();
+							checkforupdatesbutton = new JCheckBox("Check for updates?",autoupdate);
+								checkforupdatesbutton.addItemListener(this);
+							checkpanel.add(checkforupdatesbutton);
+							if (allowexperimental) {
+								includeexperimentalbutton = new JCheckBox("Include Experimental?",experimental);
+									includeexperimentalbutton.addItemListener(this);
+								checkpanel.add(includeexperimentalbutton);
+							}
+							if (allowminor) {
+								includeminorbutton = new JCheckBox("Include Minor?",minor);
+									includeminorbutton.addItemListener(this);
+								checkpanel.add(includeminorbutton);
+							}
+							cancelbutton = new JButton("Cancel");
+								cancelbutton.addActionListener(this);
+							checkpanel.add(cancelbutton);
+							updatebutton = new JButton("Update");
+								updatebutton.addActionListener(this);
+							checkpanel.add(updatebutton);
+						pane.add(checkpanel,BorderLayout.SOUTH);
+						installpanel = new JPanel();
+							progressBar = new JProgressBar();
+							installpanel.add(progressBar,BorderLayout.CENTER);
+							installbutton = new JButton("Install and relaunch");
+								installbutton.addActionListener(this);
+								installbutton.setEnabled(false);
+							installpanel.add(installbutton, BorderLayout.WEST);
+					window.setBounds((int) (center.getX() - width/2),(int) (center.getY() - height/2), width, height);
+					window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+					window.show();
+				} else {
+					cancellistener.actionPerformed(new ActionEvent(this,0,""));
+				}
 			//} catch (IOException e) {
-			} catch (Exception e) {
 				//Not connected to the internet or can't contact webpage, just go on
-			}
+			//}
 		}
 	}
 	public void itemStateChanged(ItemEvent e) {

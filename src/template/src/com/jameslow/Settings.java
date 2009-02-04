@@ -214,7 +214,6 @@ public class Settings {
 		}
 	}
 	public Manifest getManifest() {
-		//TODO: Need to make sure this works with all forms of build (windows)
 		Manifest manifest = null;
 		try {
 			InputStream is = Main.class.getResourceAsStream("/main/main.jar");
