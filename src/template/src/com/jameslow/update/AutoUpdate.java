@@ -13,7 +13,6 @@ import javax.swing.*;
 
 //java com.jameslow.update.AutoUpdate Limelight 'http://jameslow.com/content/software/Limelight-mac-0.3.zip' '/Users/James/Documents/Programs/James/Eclipse/Limelight/build/dist/Limelight.app' Limelight.app
 //TODO: Create java ant task to create/edit rss file
-//TODO: Could integrate downloading into main part of class, then the update only has install and relaunch
 
 //This is a big hack because I'm trying to get this into a single java class
 //For some reason I thought that would be easier to copy from the jar to a temp location to launch, and it might be, we'll see
@@ -31,7 +30,8 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 	private JFrame window;
 	private JPanel checkpanel;
 		private JCheckBox checkforupdatesbutton;
-		private JCheckBox includeexperimentalbutton;	
+		private JCheckBox includeexperimentalbutton;
+		private JCheckBox includeminorbutton;
 		private JButton updatebutton;
 		private JButton cancelbutton;
 	private JPanel installpanel;
@@ -42,30 +42,38 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 	private File downloadfile;
 	private boolean checkforupdates;
 	private boolean includeexperimental;
+	private boolean includeminor;
 	private ActionListener updatelistener;
 	private ActionListener cancellistener;
 	
 	//Stuff associated with downloading and extracting update
-	private static final String AUTOUPDATE = "AutoUpdate";
+	public static final String AUTOUPDATE = "AutoUpdate";
 	private static final int ARG_COUNT = 3;
 	private static final String USAGE = "usage: " + fullname + " download_file copy_target launch_app [delete_first]";
 	
 	//We're at the checking for updates stage
 	//Consuming classes should implement an ActionListener for when the auto update proceeds and cancelled
 	//Consuming classes can check if the user has checked check for updates in the future by calling getCheckForUpdates(), this can then be saved as a setting
-	public AutoUpdate(String appname, String url, String version, int build, boolean includeminorbuilds, boolean experimental, boolean autoupdate, ActionListener update, ActionListener cancel) {
-		checkforupdates = autoupdate;
-		includeexperimental = experimental;
-		cancellistener = cancel;
-		updatelistener = update;
-		this.appname = appname;
-		if (autoupdate) {
+	public AutoUpdate(String appname, String url, String version, int build,
+				boolean allowminor, boolean allowexperimental, boolean allowautoupdate,
+				boolean minor, boolean experimental, boolean autoupdate,
+				ActionListener update, ActionListener cancel) {
+		if (allowautoupdate && autoupdate) {
+			checkforupdates = autoupdate;
+			includeexperimental = experimental;
+			includeminor = minor;
+			cancellistener = cancel;
+			updatelistener = update;
+			this.appname = appname;
 			try {
 				//Get and parse XML
 				//String versionxml = new String(getHttpContent(url));
 				//TODO: parse xml / compare versions / get download file
 				//TODO: This needs to account for if we happen to be in a jar on any of the platforms in terms of search for -other- or -win- or -mac file
-				if (experimental) {
+				if (allowexperimental && experimental) {
+					
+				}
+				if (allowminor && minor) {
 					
 				}
 				download = "http://jameslow.com/content/software/Limelight-mac-0.3.zip";
@@ -84,9 +92,16 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 						checkforupdatesbutton = new JCheckBox("Check for updates?",autoupdate);
 							checkforupdatesbutton.addItemListener(this);
 						checkpanel.add(checkforupdatesbutton);
-						includeexperimentalbutton = new JCheckBox("Include Experimental?",experimental);
-							includeexperimentalbutton.addItemListener(this);
-						checkpanel.add(includeexperimentalbutton);
+						if (allowexperimental) {
+							includeexperimentalbutton = new JCheckBox("Include Experimental?",experimental);
+								includeexperimentalbutton.addItemListener(this);
+							checkpanel.add(includeexperimentalbutton);
+						}
+						if (allowminor) {
+							includeminorbutton = new JCheckBox("Include Minor?",minor);
+								includeminorbutton.addItemListener(this);
+							checkpanel.add(includeminorbutton);
+						}
 						cancelbutton = new JButton("Cancel");
 							cancelbutton.addActionListener(this);
 						checkpanel.add(cancelbutton);
@@ -116,6 +131,8 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 			checkforupdates = e.getStateChange() == ItemEvent.SELECTED; 
 		} else if (source == includeexperimentalbutton) {
 			includeexperimental = e.getStateChange() == ItemEvent.SELECTED;
+		} else if (source == includeminorbutton) {
+			includeminor = e.getStateChange() == ItemEvent.SELECTED;
 		}
 	}
 	public void actionPerformed(ActionEvent e) {
@@ -136,6 +153,9 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 	}
 	public boolean getIncludeExperiemental() {
 		return includeexperimental;
+	}
+	public boolean getIncludeMinor() {
+		return includeminor;
 	}
 	private void cancel(ActionEvent e) {
 		hideWindow();

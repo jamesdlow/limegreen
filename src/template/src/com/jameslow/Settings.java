@@ -10,6 +10,8 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes.Name;
 
+import com.jameslow.update.AutoUpdate;
+
 /**
  * Standard way of doing settings
  * TODO: Decide if we have standard way to set settings, so on OSX they're immediate, and on windows it takes affect when you click ok.
@@ -26,7 +28,7 @@ public class Settings {
 	private String aboutimage;
 	private String abouttext;
 	private String abouturl;
-	private String buildnumber;
+	private int buildnumber;
 	private String builddate;
 	private String mainclass;
 	private String title;
@@ -38,12 +40,24 @@ public class Settings {
 	private boolean logtoconsole;
 	private boolean logtofile;
 	
+	private String updateurl;
+	private boolean minor;
+	private boolean experimental;
+	private boolean autoupdate;
+	private boolean allowminor;
+	private boolean allowexperimental;
+	private boolean allowautoupdate;
+	
 	public static final String HEIGHT = "Height";
 	public static final String WIDTH = "Width";
 	public static final String TOP = "Top";
 	public static final String LEFT = "Left";
 	public static final String VISIBLE = "Visible";
 	public static final String WINDOW = "Windows.Window";
+	
+	public static final String AUTOUPDATE = AutoUpdate.AUTOUPDATE+".AutoUpdate";
+	public static final String EXPERIMENTAL = AutoUpdate.AUTOUPDATE+".Experimental";
+	public static final String MINOR = AutoUpdate.AUTOUPDATE+".Minor";
 	
 	public Settings() {
 		os = Main.OS();
@@ -88,7 +102,7 @@ public class Settings {
 	public String getAboutImage() {
 		return aboutimage;
 	}
-	public String getBuild() {
+	public int getBuild() {
 		return buildnumber;
 	}
 	public String getVersion() {
@@ -115,7 +129,7 @@ public class Settings {
 	private void loadProperties() {
 		ResourceBundle build = os.getBuildProps();
 			builddate = build.getString("build.date");
-			buildnumber = build.getString("build.number");
+			buildnumber = checkIntProperty(build,"build.number",0);
 			version = build.getString("build.version");
 			mainclass = build.getString("main.class");
 			title = build.getString("application.name");
@@ -129,6 +143,14 @@ public class Settings {
 			abouturl = getProperty("about.url","");
 			logtofile = getBooleanProperty("log.tofile");
 			logtoconsole = getBooleanProperty("log.toconsole");
+			updateurl = getProperty("update.url");
+			minor = getBooleanProperty("update.minor");
+			experimental = getBooleanProperty("update.experimental");
+			autoupdate = getBooleanProperty("update.autoupdate");
+			allowminor = getBooleanProperty("update.allow.minor");
+			allowexperimental = getBooleanProperty("update.allow.experimental");
+			allowautoupdate = getBooleanProperty("update.allow.autoupdate");
+			
 			try {
 				loglevel = Level.parse(getProperty("log.level","WARNING"));
 			} catch (Exception e) {
@@ -136,6 +158,13 @@ public class Settings {
 				Main.Logger().severe("Log level in properties file not recognised.");
 				loglevel = Level.ALL;
 			}
+	}
+	public int checkIntProperty(ResourceBundle bundle, String key, int def) {
+		try {
+			return Integer.parseInt(bundle.getString(key));
+		} catch (NumberFormatException e) {
+			return def;
+		}
 	}
 	public boolean getBooleanProperty(String key) {
 		return Boolean.parseBoolean(getProperty(key));
@@ -195,9 +224,9 @@ public class Settings {
 			return manifest;
 		} catch (Exception e) {
 			try {
-				String pathToThisClass = Main.class.getResource("/"+Main.class.getName().replaceAll("\\.", "/")+".class").toString();
-				String manifestPath = pathToThisClass.substring(0, pathToThisClass.lastIndexOf("!") + 1) + "/META-INF/MANIFEST.MF";
-				manifest = new Manifest(new URL(manifestPath).openStream());
+				String pathToThisClass = Main.class.getResource("/com/jameslow/Main.class").toString();
+		        String manifestPath = pathToThisClass.substring(0, pathToThisClass.lastIndexOf("!") + 1) + "/META-INF/MANIFEST.MF";
+	        	manifest = new Manifest(new URL(manifestPath).openStream());
 			} catch (Exception e2) {
 				Main.Logger().warning("Cannot get manifest file: " + e2.getMessage());
 				return null;
@@ -213,6 +242,36 @@ public class Settings {
 	}
 	public void preSaveSettings() {}
 	public void postSaveSettings() {}
+	public String getUpdateUrl() {
+		return updateurl;
+	}
+	public boolean getAllowAutoUpdate() {
+		return allowautoupdate;
+	}
+	public boolean getAllowExperimental() {
+		return allowexperimental;
+	}
+	public boolean getAllowMinor() {
+		return allowminor;
+	}
+	public boolean getAutoUpdate() {
+		return getSetting(AUTOUPDATE,autoupdate);
+	}
+	public boolean getExperimental() {
+		return getSetting(EXPERIMENTAL,experimental);
+	}
+	public boolean getMinor() {
+		return getSetting(MINOR,minor);
+	}
+	public void setAutoUpdate(boolean value) {
+		setSetting(AUTOUPDATE,value);
+	}
+	public void setExperimental(boolean value) {
+		setSetting(EXPERIMENTAL,value);
+	}
+	public void setMinor(boolean value) {
+		setSetting(MINOR,value);
+	}
 	public String getSetting(String key, String def) {
 		return xmlhelper.getValue(key, def);
 	}
