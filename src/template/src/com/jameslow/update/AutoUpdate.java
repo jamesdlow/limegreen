@@ -17,169 +17,154 @@ import javax.swing.*;
 
 //This is a big hack because I'm trying to get this into a single java class
 //For some reason I thought that would be easier to copy from the jar to a temp location to launch, and it might be, we'll see
-public class AutoUpdate implements ActionListener, ItemListener {
-	//Stuff associated with checking for new versions
-	private static JFrame releasewindow;
-	private static JCheckBox checkforupdatesbutton;
-	private static JCheckBox includeexperimentalbutton;
-	private static JButton updatebutton;
-	private static JButton cancelbutton;
-	private static String download;
-	private static String appname;
-	private static boolean checkforupdates;
-	private static boolean includeexperimental;
-	private static ActionListener updatelistener;
-	private static ActionListener cancellistener;
-	
-	//Stuff associated with downloading and extracting update
-	private static final String AUTOUPDATE = "AutoUpdate";
-	private static final int ARG_COUNT = 4;
-	private static final String USAGE = "usage: " + AutoUpdate.class.getName() + " name url copy_target launch_app [delete_first]";
-	private static JFrame installwindow;
-	private static JProgressBar progressBar;
-	private static JButton installbutton;
-	private static File downloadfile;
-	private static String copylocation;
-	private static String launchapp;
-	private static boolean deletefirst;
+public class AutoUpdate extends Thread implements ActionListener, ItemListener {
+	//Common
 	private static final String s = System.getProperty("file.separator");
 	private static final String tempdir = System.getProperty("java.io.tmpdir");
 	private static final String fullname = AutoUpdate.class.getName();
 	private static final int lastdot = fullname.lastIndexOf(".");
 	private static final String pack = fullname.substring(0, lastdot);
-	private static final String name = fullname.substring(fullname.lastIndexOf("."));
+	private static final String classname = fullname.substring(fullname.lastIndexOf(".")+1);
 	private static final String CLASS = "class";
+	
+	//Stuff associated with checking for new versions
+	private JFrame window;
+	private JPanel checkpanel;
+		private JCheckBox checkforupdatesbutton;
+		private JCheckBox includeexperimentalbutton;	
+		private JButton updatebutton;
+		private JButton cancelbutton;
+	private JPanel installpanel;
+		private JProgressBar progressBar;
+		private JButton installbutton;
+	private String download;
+	private String appname;
+	private File downloadfile;
+	private boolean checkforupdates;
+	private boolean includeexperimental;
+	private ActionListener updatelistener;
+	private ActionListener cancellistener;
+	
+	//Stuff associated with downloading and extracting update
+	private static final String AUTOUPDATE = "AutoUpdate";
+	private static final int ARG_COUNT = 3;
+	private static final String USAGE = "usage: " + fullname + " download_file copy_target launch_app [delete_first]";
 	
 	//We're at the checking for updates stage
 	//Consuming classes should implement an ActionListener for when the auto update proceeds and cancelled
 	//Consuming classes can check if the user has checked check for updates in the future by calling getCheckForUpdates(), this can then be saved as a setting
-	public static void checkUpdate(String name, String url, String version, int build, boolean includeminorbuilds, boolean experimental, boolean autoupdate, ActionListener update, ActionListener cancel) {
+	public AutoUpdate(String appname, String url, String version, int build, boolean includeminorbuilds, boolean experimental, boolean autoupdate, ActionListener update, ActionListener cancel) {
 		checkforupdates = autoupdate;
 		includeexperimental = experimental;
 		cancellistener = cancel;
 		updatelistener = update;
-		appname = name;
+		this.appname = appname;
 		if (autoupdate) {
 			try {
-				String versionxml = new String(getHttpContent(url));
-				releasewindow = new JFrame(name);
+				//Get and parse XML
+				//String versionxml = new String(getHttpContent(url));
 				//TODO: parse xml / compare versions / get download file
 				//TODO: This needs to account for if we happen to be in a jar on any of the platforms in terms of search for -other- or -win- or -mac file
-				download = "";
-				JTextArea box = new JTextArea();
-				AutoUpdate listener = new AutoUpdate();
-				updatebutton = new JButton("Update");
-				updatebutton.addActionListener(listener);
-				cancelbutton = new JButton("Update");
-				cancelbutton.addActionListener(listener);
-				checkforupdatesbutton = new JCheckBox("Check for updates?",autoupdate);
-				checkforupdatesbutton.addItemListener(listener);
-				includeexperimentalbutton = new JCheckBox("Include Experimental",experimental);
-				includeexperimentalbutton.addItemListener(listener);
-				releasewindow.show();
-			} catch (IOException e) {
+				if (experimental) {
+					
+				}
+				download = "http://jameslow.com/content/software/Limelight-mac-0.3.zip";
+				
+				//Construct window
+				int width = 550;
+				int height = 350;
+				GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+				Point center = ge.getCenterPoint();
+				window = new JFrame(AUTOUPDATE + " - " + appname);
+					Container pane = window.getContentPane();
+					JTextArea box = new JTextArea();
+						box.setEnabled(false);
+					pane.add(box,BorderLayout.CENTER);
+					checkpanel = new JPanel();
+						checkforupdatesbutton = new JCheckBox("Check for updates?",autoupdate);
+							checkforupdatesbutton.addItemListener(this);
+						checkpanel.add(checkforupdatesbutton);
+						includeexperimentalbutton = new JCheckBox("Include Experimental?",experimental);
+							includeexperimentalbutton.addItemListener(this);
+						checkpanel.add(includeexperimentalbutton);
+						cancelbutton = new JButton("Cancel");
+							cancelbutton.addActionListener(this);
+						checkpanel.add(cancelbutton);
+						updatebutton = new JButton("Update");
+							updatebutton.addActionListener(this);
+						checkpanel.add(updatebutton);
+					pane.add(checkpanel,BorderLayout.SOUTH);
+					installpanel = new JPanel();
+						progressBar = new JProgressBar();
+						installpanel.add(progressBar,BorderLayout.CENTER);
+						installbutton = new JButton("Install and relaunch");
+							installbutton.addActionListener(this);
+							installbutton.setEnabled(false);
+						installpanel.add(installbutton, BorderLayout.WEST);
+				window.setBounds((int) (center.getX() - width/2),(int) (center.getY() - height/2), width, height);
+				window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				window.show();
+			//} catch (IOException e) {
+			} catch (Exception e) {
 				//Not connected to the internet or can't contact webpage, just go on
 			}
 		}
 	}
-	private static void hideWindow() {
-		releasewindow.hide();
+	public void itemStateChanged(ItemEvent e) {
+		Object source = e.getSource();
+		if (source == checkforupdatesbutton) {
+			checkforupdates = e.getStateChange() == ItemEvent.SELECTED; 
+		} else if (source == includeexperimentalbutton) {
+			includeexperimental = e.getStateChange() == ItemEvent.SELECTED;
+		}
 	}
-	public static boolean getCheckForUpdates() {
+	public void actionPerformed(ActionEvent e) {
+		JButton source = (JButton)e.getSource();
+		if (source == installbutton) {
+			installAndRelaunch(e);
+		} else if (source == updatebutton) {
+			update();
+		} else if (source == cancelbutton) {
+			cancel(e);
+		}
+	}
+	private void hideWindow() {
+		window.hide();
+	}
+	public boolean getCheckForUpdates() {
 		return checkforupdates;
 	}
-	private static void cancel(ActionEvent e) {
+	public boolean getIncludeExperiemental() {
+		return includeexperimental;
+	}
+	private void cancel(ActionEvent e) {
 		hideWindow();
 		cancellistener.actionPerformed(e);
 	}
-	private static void update(ActionEvent e) {
-		hideWindow();
-		//TODO: Work these out from system.
-		String deploy = "";
-		String launch = "";
+	private void update() {
 		try {
-			File dir = new File(tempdir + s + pack.replaceAll("\\.", s));
-			dir.mkdirs();
-			String classname = dir.toString()+s+name;
-			File file = new File(classname+"."+CLASS);
-			file.deleteOnExit();
-			InputStream is = AutoUpdate.class.getResourceAsStream("/"+fullname.replaceAll("\\.", "/")+ "."+CLASS);
-			copyInputStream(is,new FileOutputStream(file));
-			final String p = " ";
-			Runtime.getRuntime().exec("java "+classname+p+appname+p+download+p+deploy+p+launch,null,dir).waitFor();
-			
-		} catch (Exception ex) {
-			Error("Could not launch update program: " + ex.getMessage());
-		}
-		updatelistener.actionPerformed(e);
-		//Dorce quit here, then updatelistener only needs to handle things like saving settings
-		System.exit(0);
-	}
-	
-	//We're at the download and extracting stage
-	public static void main(String[] args) {
-		try {
-			System.setProperty("com.apple.mrj.application.apple.menu.about.name","AutoUpdate");
-			System.setProperty("apple.laf.useScreenMenuBar","true");
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			Container pane = window.getContentPane();
+			pane.remove(checkpanel);
+			pane.add(installpanel,BorderLayout.SOUTH);
+			this.start();
 		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		initWindow(null);
-		if (args.length >= ARG_COUNT) {
-			String name = args[0];
-			String url = args[1];
-			copylocation = args[2];
-			launchapp = args[3];
-			deletefirst = false;
-			int mode = 0;
-			if (args.length > ARG_COUNT) {
-				try {
-					mode = Integer.parseInt(args[4]);
-					deletefirst = mode > 0;
-				} catch (NumberFormatException e) {
-					Error(USAGE + " - delete_first must be a number");
-				}
-			}
-			downloadUpdate(name,url);
-		} else {
-			Error(USAGE);
+			Error("Could not launch update program: " + e.getMessage());
 		}
 	}
-	private static void initWindow(String name) {
-		if (installwindow == null) {
-			final int height = 90;
-			final int width = 200;
-			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-			Point center = ge.getCenterPoint();
-			installwindow = new JFrame(AUTOUPDATE + (name == null ? "" : " - " + name));
-				JPanel panel = new JPanel();
-				installwindow.add(panel);
-					progressBar = new JProgressBar();
-					panel.add(progressBar);
-					installbutton = new JButton("Install and relaunch");
-					installbutton.addActionListener(new AutoUpdate());
-					installbutton.setEnabled(false);
-					panel.add(installbutton);
-					installwindow.setBounds((int) (center.getX() - width/2),(int) (center.getY() - height/2), width, height);
-					installwindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				installwindow.show();
-		} else {
-			installwindow.setTitle(AUTOUPDATE + (name == null ? "" : " - " + name));
-		}
-	}
-	private static void downloadUpdate(String name, String url) {
+	public void run() {
+		downloadUpdate();
+    }
+	
+	private void downloadUpdate() {
 		final String couldnot = "Autoupdate could not be completed.";
 		try {
-			initWindow(name);
 			int i = 0;
 			//while file exists work out name to download to incrementing suffix
-			while ((downloadfile = new File(tempdir + s + name + "AutoUpdate" + i + ".zip")).exists()) {
+			while ((downloadfile = new File(tempdir + s + appname + AUTOUPDATE + i + ".zip")).exists()) {
 				i++;
 			}
 			if (downloadfile.createNewFile()) {
-				downloadfile.deleteOnExit();
-				getHttpContent(url, new FileOutputStream(downloadfile), true);
+				getHttpContent(download, new FileOutputStream(downloadfile));
 				//TODO: check file integrity against size / MD5
 				installbutton.setEnabled(true);
 			} else {
@@ -189,7 +174,105 @@ public class AutoUpdate implements ActionListener, ItemListener {
 			Error(couldnot);
 		}
 	}
-	private static final boolean launchApplication(String path, String application) {
+	private void installAndRelaunch(ActionEvent e) {
+		try {
+			final String p = " ";
+			hideWindow();
+			updatelistener.actionPerformed(e);
+			File dir = new File(tempdir + s + pack.replaceAll("\\.", s));
+			dir.mkdirs();
+			String classfile = dir.toString()+s+classname;
+			File file = new File(classfile+"."+CLASS);
+			InputStream is = AutoUpdate.class.getResourceAsStream("/"+fullname.replaceAll("\\.", "/")+ "."+CLASS);
+			copyInputStream(is,new FileOutputStream(file));
+			//TODO: Work these out from system.
+			String deploy = "/Users/James/Documents/Programs/James/Eclipse/Limelight/build/dist/Limelight.app";
+			String launch = "Limelight.App";
+			Runtime.getRuntime().exec("java "+fullname+p+downloadfile.getAbsolutePath()+p+deploy+p+launch,null,new File(tempdir)).waitFor();
+		} catch (Exception ex) {
+			Error(ex.getMessage());
+		}
+		//Force quit here, then updatelistener only needs to handle things like saving settings
+		System.exit(0);
+	}
+	private void getHttpContent(String url, OutputStream out) throws IOException {
+		URL u = new URL(url); 
+		HttpURLConnection huc = (HttpURLConnection) u.openConnection();
+		huc.setRequestMethod("GET"); 
+		huc.connect(); 
+		int code = huc.getResponseCode();
+		int length = huc.getContentLength();
+		copyInputStream(huc.getInputStream(), out, length);
+		out.close();
+		huc.disconnect();
+	}
+	private char[] getHttpContent(String url) throws IOException {
+		URL u = new URL(url); 
+		HttpURLConnection huc = (HttpURLConnection) u.openConnection();
+		huc.setRequestMethod("GET"); 
+		huc.connect(); 
+		int code = huc.getResponseCode();
+		char[] result = null;
+		//if (code >= 200 && code < 300) {
+			InputStreamReader in = new InputStreamReader(huc.getInputStream());
+			//BufferedReader in = new BufferedReader(new InputStreamReader(huc.getInputStream()));
+			int total = in.read(result);
+		//}
+		huc.disconnect();
+		return result;
+	}
+	private void copyInputStream(InputStream in, OutputStream out, int length) throws IOException {
+		byte[] buffer = new byte[1024];
+		int len;
+		progressBar.setMaximum(length);
+		int total = 0;
+		while((len = in.read(buffer)) >= 0) {
+			out.write(buffer, 0, len);
+			total = total + len;
+			progressBar.setValue(total);
+			progressBar.setStringPainted(true);
+		}
+		in.close();
+		out.close();
+	}	
+	
+	//We're at the download and extracting stage
+	public static void main(String[] args) {
+		try {
+			System.setProperty("com.apple.mrj.application.apple.menu.about.name",AUTOUPDATE);
+			System.setProperty("apple.laf.useScreenMenuBar","true");
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if (args.length >= ARG_COUNT) {
+			String filename = args[0];
+			String copylocation = args[1];
+			String launchapp = args[2];
+			boolean deletefirst = false;
+			int mode = 0;
+			if (args.length > ARG_COUNT) {
+				try {
+					mode = Integer.parseInt(args[3]);
+					deletefirst = mode > 0;
+				} catch (NumberFormatException e) {
+					Error(USAGE + " - delete_first must be a number");
+				}
+			}
+			File downloadfile = new File(filename);
+			downloadfile.deleteOnExit();
+			unzip(downloadfile,copylocation,deletefirst);
+			downloadfile.delete();
+			if (!launchApplication(copylocation,launchapp)) {
+				Error("Could not relaunch application.");
+			}
+
+		} else {
+			Error(USAGE);
+		}
+		System.exit(0);
+	}
+	private static boolean launchApplication(String path, String application) {
 		String osname = System.getProperty("os.name").toLowerCase();
 		try {
 			if (application.endsWith(".jar")) {
@@ -213,27 +296,6 @@ public class AutoUpdate implements ActionListener, ItemListener {
 			return false;
 		}
 	}
-	private static final void copyInputStream(InputStream in, OutputStream out) throws IOException {
-		copyInputStream(in,out,false,-1);
-	}
-	private static final void copyInputStream(InputStream in, OutputStream out, boolean update, int length) throws IOException {
-		byte[] buffer = new byte[1024];
-		int len;
-		if (update) {
-			progressBar.setMaximum(length);
-		}
-		int total = 0;
-		while((len = in.read(buffer)) >= 0) {
-			out.write(buffer, 0, len);
-			if (update) {
-				total = total + len;
-				progressBar.setValue(total);
-				progressBar.setStringPainted(true);
-			}
-		}
-		in.close();
-		out.close();
-	}
 	private static void createEntry(ZipFile zipFile, ZipEntry entry, String outdir, String prefix) throws IOException {
 		String name = entry.getName();
 		if (prefix != null) {
@@ -252,7 +314,6 @@ public class AutoUpdate implements ActionListener, ItemListener {
 	}
 	private static boolean unzip(File infile, String outdir, boolean deletefirst) {
 		//TODO: delete all in directory, maybe we should have a delete first, accept for .app on OSX
-		
 		Enumeration entries;
 		ZipFile zipFile;
 		try {
@@ -290,61 +351,19 @@ public class AutoUpdate implements ActionListener, ItemListener {
 			return false;
 		}
 	}
-	private static void getHttpContent(String url, OutputStream out, boolean update) throws IOException {
-		URL u = new URL(url); 
-		HttpURLConnection huc = (HttpURLConnection) u.openConnection();
-		huc.setRequestMethod("GET"); 
-		huc.connect(); 
-		int code = huc.getResponseCode();
-		int length = huc.getContentLength();
-		copyInputStream(huc.getInputStream(), out, update, length);
-		out.close();
-		huc.disconnect();
-	}
-	private static char[] getHttpContent(String url) throws IOException {
-		URL u = new URL(url); 
-		HttpURLConnection huc = (HttpURLConnection) u.openConnection();
-		huc.setRequestMethod("GET"); 
-		huc.connect(); 
-		int code = huc.getResponseCode();
-		char[] result = null;
-		//if (code >= 200 && code < 300) {
-			InputStreamReader in = new InputStreamReader(huc.getInputStream());
-			//BufferedReader in = new BufferedReader(new InputStreamReader(huc.getInputStream()));
-			int total = in.read(result);
-		//}
-		huc.disconnect();
-		return result;
-	}
-	private static void installAndRelaunch() {
-		unzip(downloadfile,copylocation,deletefirst);
-		downloadfile.delete();
-		if (!launchApplication(copylocation,launchapp)) {
-			Error("Could not relaunch application.");
+	private static void copyInputStream(InputStream in, OutputStream out) throws IOException {
+		byte[] buffer = new byte[1024];
+		int len;
+		int total = 0;
+		while((len = in.read(buffer)) >= 0) {
+			out.write(buffer, 0, len);
 		}
-		System.exit(0);
+		in.close();
+		out.close();
 	}
 	
 	//Common
 	public static void Error(String msg) {
 		System.out.println(msg);
-	}
-	public void itemStateChanged(ItemEvent e) {
-		Object source = e.getSource();
-		if (source == checkforupdatesbutton) {
-			checkforupdates = e.getStateChange() == ItemEvent.SELECTED; 
-		} else if (source == includeexperimentalbutton) {
-			includeexperimental = e.getStateChange() == ItemEvent.SELECTED;
-		}
-	}
-	public void actionPerformed(ActionEvent e) {
-		Object source = e.getSource();
-		if (source == installbutton) {
-			installAndRelaunch();
-		} else if (source == updatebutton) {
-			update(e);
-		} else if (source == cancelbutton) {
-			cancel(e);
-		}
 	}
 }
