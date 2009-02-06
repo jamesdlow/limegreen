@@ -8,12 +8,11 @@ import java.awt.event.ItemListener;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.regex.*;
 import java.util.zip.*;
 import javax.swing.*;
 
-//java com.jameslow.update.AutoUpdate Limelight 'http://jameslow.com/content/software/Limelight-mac-0.3.zip' '/Users/James/Documents/Programs/James/Eclipse/Limelight/build/dist/Limelight.app' Limelight.app
 //TODO: Create java ant task to create/edit rss file
-
 //This is a big hack because I'm trying to get this into a single java class
 //For some reason I thought that would be easier to copy from the jar to a temp location to launch, and it might be, we'll see
 public class AutoUpdate extends Thread implements ActionListener, ItemListener {
@@ -24,10 +23,12 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 	private static final int lastdot = fullname.lastIndexOf(".");
 	private static final String pack = fullname.substring(0, lastdot);
 	private static final String classname = fullname.substring(fullname.lastIndexOf(".")+1);
+	private static final String osname = System.getProperty("os.name").toLowerCase();
 	private static final String CLASS = "class";
 	
 	//Stuff associated with checking for new versions
 	private JFrame window;
+	private JTextArea box; 
 	private JPanel checkpanel;
 		private JCheckBox checkforupdatesbutton;
 		private JCheckBox includeexperimentalbutton;
@@ -45,6 +46,10 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 	private boolean includeminor;
 	private ActionListener updatelistener;
 	private ActionListener cancellistener;
+	private boolean isapp;
+	private boolean isexe;
+	private String running;
+	private int apppos;
 	
 	//Stuff associated with downloading and extracting update
 	public static final String AUTOUPDATE = "AutoUpdate";
@@ -65,12 +70,31 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 			cancellistener = cancel;
 			updatelistener = update;
 			this.appname = appname;
-			//try {
+			try {
+				url = "http://jameslow.com/content/software/limelight/Limelight.xml";
 				//Get and parse XML
-				//String versionxml = new String(getHttpContent(url));
+				String versionxml = getHttpContent(url);
 				//TODO: parse xml / compare versions / get download file
-				//TODO: This needs to account for if we happen to be in a jar on any of the platforms in terms of search for -other- or -win- or -mac file
-				boolean needtoupdate = true;
+
+				running = AutoUpdate.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString();
+				apppos = running.indexOf(".app/Contents/Resources/Java");
+			    isapp = osname.startsWith("mac os x") && apppos >= 0;
+			    if (isapp) {
+			    	isexe = false;
+			    } else {
+			    	//jsmooth copies jar to a temp location before running, that looks something like this:
+			    	Pattern pattern = Pattern.compile("temp[0-9]+\\.jar");
+			    	Matcher matcher = pattern.matcher(running);
+			    	isexe = osname.startsWith("windows") && isexe;
+			    }
+				if (isapp) {
+					//search for -mac- file
+				} else if (isexe) {
+					//search for -win- file
+				} else {
+					//search for -other- file
+				}
+			    boolean needtoupdate = true;
 				if (allowexperimental && experimental) {
 					
 				}
@@ -78,7 +102,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 					
 				}
 				if (needtoupdate) {
-					download = "http://jameslow.com/content/software/Limelight-mac-0.3.zip";
+					download = "http://jameslow.com/content/software/limelight/Limelight-other-0.3.zip";
 					
 					//Construct window
 					int width = 550;
@@ -87,7 +111,8 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 					Point center = ge.getCenterPoint();
 					window = new JFrame(AUTOUPDATE + " - " + appname);
 						Container pane = window.getContentPane();
-						JTextArea box = new JTextArea();
+						box = new JTextArea();
+							box.setText(versionxml);
 							box.setEnabled(false);
 						pane.add(box,BorderLayout.CENTER);
 						checkpanel = new JPanel();
@@ -125,9 +150,12 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 					//TODO: Not sure if we need to make sure number is correct
 					cancellistener.actionPerformed(new ActionEvent(this,0,""));
 				}
-			//} catch (IOException e) {
+			} catch (URISyntaxException e) {
+				Error("Could not get running applcation: "+e.getMessage());
+			} catch (IOException e) {
 				//Not connected to the internet or can't contact webpage, just go on
-			//}
+				cancellistener.actionPerformed(new ActionEvent(this,0,""));
+			}
 		}
 	}
 	public void itemStateChanged(ItemEvent e) {
@@ -185,6 +213,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 		try {
 			int i = 0;
 			//while file exists work out name to download to incrementing suffix
+			//TODO: change to just suffix filename downloaded from internet
 			while ((downloadfile = new File(tempdir + s + appname + AUTOUPDATE + i + ".zip")).exists()) {
 				i++;
 			}
@@ -210,11 +239,37 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 			File file = new File(classfile+"."+CLASS);
 			InputStream is = AutoUpdate.class.getResourceAsStream("/"+fullname.replaceAll("\\.", "/")+ "."+CLASS);
 			copyInputStream(is,new FileOutputStream(file));
-			//TODO: Work these out from system.
-			String deploy = "/Users/James/Documents/Programs/James/Eclipse/Limelight/build/dist/Limelight.app";
-			String launch = "Limelight.App";
-			Runtime.getRuntime().exec("java "+fullname+p+downloadfile.getAbsolutePath()+p+deploy+p+launch,null,new File(tempdir)).waitFor();
+			String deploy;
+			String launch;
+			
+			String us = "/"; //URI seperator
+			if (isapp) {
+				//jar:file:/Users/James/Documents/Programs/James/Eclipse/Template/build/dist/Template.app/Contents/Resources/Java/Template.jar!/main/main.jar
+				deploy = running.substring(running.indexOf(us),apppos+".app".length());
+				launch = deploy.substring(deploy.lastIndexOf(us)+1);
+			} else if (isexe) {
+				//jar:file:/C:/Users/Janakan/AppData/Local/Temp/temp0.jar!/main/main.jar
+				//TODO: not ideal...
+				deploy = System.getProperty("user.dir");
+				//TODO: have to assume its this, or could look up in zip below
+				launch = appname+".exe";
+			} else {
+				//jar:file:/Users/James/Documents/Programs/James/Eclipse/Template/build/dist/Template.jar!/main/main.jar
+				int exclaim = running.lastIndexOf("!");
+				int last;
+				if (exclaim >= 0) {
+					last = running.lastIndexOf(us, exclaim);
+				} else {
+					last = running.lastIndexOf(us);
+				}
+				deploy = running.substring(running.indexOf(us),last);
+				launch = running.substring(last+1, exclaim);
+			}
+			//deploy = "/Users/James/Documents/Programs/James/Eclipse/Limelight/build/dist/Limelight.app";
+			//launch = "Limelight.App";
+			Runtime.getRuntime().exec("java "+fullname+p+downloadfile.getAbsolutePath()+p+deploy+p+launch,null,new File(tempdir));
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			Error(ex.getMessage());
 		}
 		//Force quit here, then updatelistener only needs to handle things like saving settings
@@ -231,20 +286,22 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 		out.close();
 		huc.disconnect();
 	}
-	private char[] getHttpContent(String url) throws IOException {
+	private String getHttpContent(String url) throws IOException {
 		URL u = new URL(url); 
 		HttpURLConnection huc = (HttpURLConnection) u.openConnection();
 		huc.setRequestMethod("GET"); 
 		huc.connect(); 
 		int code = huc.getResponseCode();
-		char[] result = null;
+		StringBuffer result = new StringBuffer();
 		//if (code >= 200 && code < 300) {
-			InputStreamReader in = new InputStreamReader(huc.getInputStream());
-			//BufferedReader in = new BufferedReader(new InputStreamReader(huc.getInputStream()));
-			int total = in.read(result);
+		BufferedReader in = new BufferedReader(new InputStreamReader(huc.getInputStream()));
+		String line;
+		while ((line = in.readLine()) != null) {
+			result.append(line);
+		}
 		//}
 		huc.disconnect();
-		return result;
+		return result.toString();
 	}
 	private void copyInputStream(InputStream in, OutputStream out, int length) throws IOException {
 		byte[] buffer = new byte[1024];
@@ -286,28 +343,29 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 			}
 			File downloadfile = new File(filename);
 			downloadfile.deleteOnExit();
+			Pause(3);
 			unzip(downloadfile,copylocation,deletefirst);
 			downloadfile.delete();
 			if (!launchApplication(copylocation,launchapp)) {
 				Error("Could not relaunch application.");
 			}
-
 		} else {
 			Error(USAGE);
 		}
 		System.exit(0);
 	}
 	private static boolean launchApplication(String path, String application) {
-		String osname = System.getProperty("os.name").toLowerCase();
 		try {
 			if (application.endsWith(".jar")) {
 				if (osname.startsWith("mac os x")) {
-					Runtime.getRuntime().exec("open -a "+path+s+application).waitFor();
+					System.out.println(path+s+application);
+					Runtime.getRuntime().exec("open "+path+s+application).waitFor();
 				} else {
 					Runtime.getRuntime().exec("java "+path+s+application).waitFor();
 				}
 			} else {
 				if (osname.startsWith("mac os x")) {
+					System.out.println(path);
 					Runtime.getRuntime().exec("open -a "+path).waitFor();
 				} else if (osname.startsWith("windows")) {
 					Runtime.getRuntime().exec(path+s+application).waitFor();
@@ -390,5 +448,12 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 	//Common
 	public static void Error(String msg) {
 		System.out.println(msg);
+	}
+	public static void Pause(long s) {
+		try {
+			Thread.sleep(s * 1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 }

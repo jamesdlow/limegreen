@@ -110,7 +110,9 @@ public class Main {
 		boolean addconsole = false;
 		if (settings.getLogToFile()) {
 			try {
-				initlogger.addHandler(new FileHandler(settings.getLogFile()));
+				Handler handler = new FileHandler(settings.getLogFile(),true);
+				handler.setFormatter(new SimpleFormatter());
+				initlogger.addHandler(handler);
 			} catch (Exception e) {
 				Logger().warning("Could not set logfile " + settings.getLogFile() + ": " + e.getMessage());
 				addconsole = true;
