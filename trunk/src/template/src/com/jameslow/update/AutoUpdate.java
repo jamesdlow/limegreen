@@ -1,34 +1,55 @@
 package com.jameslow.update;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.regex.*;
 import java.util.zip.*;
 import javax.swing.*;
+import javax.swing.event.*;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
+import org.xml.sax.*;
+import com.apple.eio.FileManager;
 
-//TODO: Create java ant task to create/edit rss file
 //This is a big hack because I'm trying to get this into a single java class
 //For some reason I thought that would be easier to copy from the jar to a temp location to launch, and it might be, we'll see
-public class AutoUpdate extends Thread implements ActionListener, ItemListener {
+public class AutoUpdate extends Thread implements ActionListener, ItemListener, Comparator, HyperlinkListener {
 	//Common
 	private static final String s = System.getProperty("file.separator");
 	private static final String tempdir = System.getProperty("java.io.tmpdir");
 	private static final String fullname = AutoUpdate.class.getName();
 	private static final int lastdot = fullname.lastIndexOf(".");
 	private static final String pack = fullname.substring(0, lastdot);
-	private static final String classname = fullname.substring(fullname.lastIndexOf(".")+1);
+	private static final String classname = fullname.substring(lastdot+1);
 	private static final String osname = System.getProperty("os.name").toLowerCase();
+	private static final boolean isosx = osname.startsWith("mac os x");
+	private static final boolean iswindows = osname.startsWith("windows");
 	private static final String CLASS = "class";
+	
+	//Constants
+	private static final String LIMEGREEN_BUILD = "limegreen:build";
+	private static final String LIMEGREEN_VERSION = "limegreen:version";
+	private static final String LIMEGREEN_EXPERIMENTAL = "limegreen:experimental";
+	private static final String ATOM_ENTRY = "entry";
+	private static final String ATOM_ID = "id";
+	private static final String ATOM_TITLE = "title";
+	private static final String ATOM_CONTENT = "content";
+	private static final String ATOM_UPDATED = "updated";
+	private static final String ATOM_LINK = "link";
+	private static final String ATOM_LINK_HREF = "href";
+	private static final String ATOM_LINK_REL = "rel";
+	private static final String ATOM_LINK_ENCLOSURE = "enclosure";
+	private static final String ATOM_LINK_LENGTH = "length";
+	private static final String ATOM_LINK_TYPE = "type";
+	private static final String VERSION_SPLIT = "\\.";
 	
 	//Stuff associated with checking for new versions
 	private JFrame window;
-	private JTextArea box; 
+	private JEditorPane editor;
+	private JScrollPane scroll;
 	private JPanel checkpanel;
 		private JCheckBox checkforupdatesbutton;
 		private JCheckBox includeexperimentalbutton;
@@ -41,9 +62,11 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 	private String download;
 	private String appname;
 	private File downloadfile;
-	private boolean checkforupdates;
+	private boolean autoupdate;
 	private boolean includeexperimental;
 	private boolean includeminor;
+	private boolean allowexperimental;
+	private boolean allowminor;
 	private ActionListener updatelistener;
 	private ActionListener cancellistener;
 	private boolean isapp;
@@ -61,91 +84,31 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 	//Consuming classes can check if the user has checked check for updates in the future by calling getCheckForUpdates(), this can then be saved as a setting
 	public void checkForUpdates(String appname, String url, String version, int build,
 				boolean allowminor, boolean allowexperimental, boolean allowautoupdate,
-				boolean minor, boolean experimental, boolean autoupdate,
+				boolean includeminor, boolean includeexperimental, boolean autoupdate,
 				ActionListener update, ActionListener cancel) {
 		if (allowautoupdate && autoupdate) {
-			checkforupdates = autoupdate;
-			includeexperimental = experimental;
-			includeminor = minor;
+			this.autoupdate = autoupdate;
+			this.includeexperimental = includeexperimental;
+			this.includeminor = includeminor;
 			cancellistener = cancel;
 			updatelistener = update;
 			this.appname = appname;
+			this.allowexperimental = allowexperimental;
+			this.allowminor = allowminor;
 			try {
-				url = "http://jameslow.com/content/software/limelight/Limelight.xml";
-				//Get and parse XML
 				String versionxml = getHttpContent(url);
-				//TODO: parse xml / compare versions / get download file
-
 				running = AutoUpdate.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString();
 				apppos = running.indexOf(".app/Contents/Resources/Java");
-			    isapp = osname.startsWith("mac os x") && apppos >= 0;
+			    isapp = isosx && apppos >= 0;
 			    if (isapp) {
 			    	isexe = false;
 			    } else {
 			    	//jsmooth copies jar to a temp location before running, that looks something like this:
-			    	Pattern pattern = Pattern.compile("temp[0-9]+\\.jar");
-			    	Matcher matcher = pattern.matcher(running);
-			    	isexe = osname.startsWith("windows") && isexe;
+			    	isexe = iswindows && Pattern.compile("temp[0-9]+\\.jar").matcher(running).find();
 			    }
-				if (isapp) {
-					//search for -mac- file
-				} else if (isexe) {
-					//search for -win- file
-				} else {
-					//search for -other- file
-				}
-			    boolean needtoupdate = true;
-				if (allowexperimental && experimental) {
-					
-				}
-				if (allowminor && minor) {
-					
-				}
-				if (needtoupdate) {
-					download = "http://jameslow.com/content/software/limelight/Limelight-other-0.3.zip";
-					
-					//Construct window
-					int width = 550;
-					int height = 350;
-					GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-					Point center = ge.getCenterPoint();
-					window = new JFrame(AUTOUPDATE + " - " + appname);
-						Container pane = window.getContentPane();
-						box = new JTextArea();
-							box.setText(versionxml);
-							box.setEnabled(false);
-						pane.add(box,BorderLayout.CENTER);
-						checkpanel = new JPanel();
-							checkforupdatesbutton = new JCheckBox("Check for updates?",autoupdate);
-								checkforupdatesbutton.addItemListener(this);
-							checkpanel.add(checkforupdatesbutton);
-							if (allowexperimental) {
-								includeexperimentalbutton = new JCheckBox("Include Experimental?",experimental);
-									includeexperimentalbutton.addItemListener(this);
-								checkpanel.add(includeexperimentalbutton);
-							}
-							if (allowminor) {
-								includeminorbutton = new JCheckBox("Include Minor?",minor);
-									includeminorbutton.addItemListener(this);
-								checkpanel.add(includeminorbutton);
-							}
-							cancelbutton = new JButton("Cancel");
-								cancelbutton.addActionListener(this);
-							checkpanel.add(cancelbutton);
-							updatebutton = new JButton("Update");
-								updatebutton.addActionListener(this);
-							checkpanel.add(updatebutton);
-						pane.add(checkpanel,BorderLayout.SOUTH);
-						installpanel = new JPanel();
-							progressBar = new JProgressBar();
-							installpanel.add(progressBar,BorderLayout.CENTER);
-							installbutton = new JButton("Install and relaunch");
-								installbutton.addActionListener(this);
-								installbutton.setEnabled(false);
-							installpanel.add(installbutton, BorderLayout.WEST);
-					window.setBounds((int) (center.getX() - width/2),(int) (center.getY() - height/2), width, height);
-					window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-					window.show();
+			    String versioninfo;
+				if ((versioninfo = parseXML(versionxml, version, build)) != null) {
+					constructWindow(versioninfo);
 				} else {
 					//TODO: Not sure if we need to make sure number is correct
 					cancellistener.actionPerformed(new ActionEvent(this,0,""));
@@ -158,10 +121,257 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 			}
 		}
 	}
+	private Element getElement(Element element, String tag) {
+		NodeList nl = element.getElementsByTagName(tag);
+		if (nl != null) {
+			if (nl.getLength() > 0) {
+				return (Element)nl.item(0);
+			}
+		}
+		return null;	
+	}
+	private String getTagValue(Element element, String tag) {
+		return getTagValue(element,tag,"");
+	}
+	private String getTagValue(Element element, String tag, String defaultvalue) {
+		try {
+			Element element2 = getElement(element,tag);
+			Node node = element2.getFirstChild();
+			if (node == null) {
+				return "";
+			} else {
+				return node.getNodeValue();
+			}
+		} catch (Exception e) {
+			return defaultvalue;
+		}
+	}
+	private int getTagValue(Element element, String tag, int defaultvalue) {
+		return Integer.parseInt(getTagValue(element,tag,""+defaultvalue));
+	}
+	private boolean getTagValue(Element element, String tag, boolean defaultvalue) {
+		return Boolean.parseBoolean(getTagValue(element,tag,""+defaultvalue));
+	}
+	private int[] getTagValue(Element element, String tag, int[] defaultvalue) {
+		return getIntArray(getTagValue(element,tag,""+defaultvalue),defaultvalue);
+	}
+	private int[] getIntArray(String value, int[] defaultvalue) {
+		return getIntArray(value.split(VERSION_SPLIT),defaultvalue);
+	}
+	private int[] getIntArray(String[] values, int[] defaultvalue) {
+		int[] result = new int[values.length];
+		try {
+			for (int i=0; i<values.length; i++){
+				result[i] = Integer.parseInt(values[i]);
+			}
+			return result;
+		} catch (Exception e) {
+			return defaultvalue;
+		}
+	}
+	private String getAttributeValue(Element element, String attribute) {
+		return getAttributeValue(element,attribute,"");
+	}
+	private String getAttributeValue(Element element, String attribute, String defaultvalue) {
+		try {
+			return element.getAttribute(attribute);
+		} catch (Exception e) {
+			return defaultvalue;
+		}
+	}
+	private String getAttributeValue(String tag, Element element, String attribute) {
+		return getAttributeValue(getElement(element,tag),attribute);
+	}
+	private String getAttributeValue(String tag, Element element, String attribute, String defaultvalue) {
+		return getAttributeValue(getElement(element,tag),attribute,defaultvalue);
+	}
+	public int compare(Object o1, Object o2) {
+		Element e1 = (Element) o1;
+		Element e2 = (Element) o2;
+		return compare(e1,e2,true);
+	}
+	public int compare(Element e1, Element e2, boolean comparebuild) {
+		int build1 = getTagValue(e1,LIMEGREEN_BUILD,0);
+		int build2 = getTagValue(e2,LIMEGREEN_BUILD,0);
+		int[] version1 = getTagValue(e1,LIMEGREEN_VERSION,new int[0]);
+		int[] version2 = getTagValue(e2,LIMEGREEN_VERSION,new int[0]);
+		return compare(version1,build1,version2,build2,comparebuild);
+	}
+	public int compare(int[] version1, int build1, Element e2, boolean comparebuild) {
+		int build2 = getTagValue(e2,LIMEGREEN_BUILD,0);
+		int[] version2 = getTagValue(e2,LIMEGREEN_VERSION,new int[0]);
+		return compare(version1,build1,version2,build2,comparebuild);
+	}
+	public int compare(int[] version1, int build1, int[] version2, int build2, boolean comparebuild) {
+		int[] compare1;
+		int[] compare2;
+		int comparebuild1;
+		int comparebuild2;
+		boolean swap = false;
+		if (version2.length > version1.length) {
+			compare1 = version2;
+			compare2 = version1;
+			comparebuild1 = build2;
+			comparebuild2 = build1;
+			swap = true;
+		} else {
+			compare1 = version1;
+			compare2 = version2;
+			comparebuild1 = build1;
+			comparebuild2 = build2;
+		}
+		for(int i = 0; i<compare1.length; i++){
+			if (i<compare2.length) {
+				int part1 = compare1[i];
+				int part2 = compare2[i];
+				if (part1 > part2) {
+					return (swap ? 1 : -1);
+				} else if (part2 > part1) {
+					return (swap ? -1 : 1);
+				}
+			} else {
+				return (swap ? 1 : -1);
+			}
+		}
+		if (comparebuild) { 
+			if (comparebuild1 > comparebuild2) {
+				return  (swap ? 1 : -1);
+			} else if (comparebuild1 < comparebuild2) {
+				return  (swap ? -1 : 1);
+			}
+		}
+		return 0;
+	}
+	private String parseXML(String xversionxml, String version, int build) {
+		if ("".compareTo(xversionxml) != 0) {
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db;
+			try {
+				db = dbf.newDocumentBuilder();
+				Document dom = db.parse(new InputSource(new StringReader(xversionxml)));
+				Element docEle = dom.getDocumentElement();
+				NodeList entries = docEle.getElementsByTagName(ATOM_ENTRY);
+				//Go through entries looking for the newest one
+				Element newer = null;
+				if (entries != null) {
+					if (entries.getLength() > 0) {
+						for(int i = 0 ; i < entries.getLength();i++) {
+							Element entry = (Element)entries.item(i);
+							if (!Boolean.parseBoolean(getTagValue(entry, LIMEGREEN_EXPERIMENTAL)) || allowexperimental) {
+								if (newer == null) {
+									//Include minor here, to see if we update if version the same, but builds different
+									if (compare(getIntArray(version,new int[0]),build,entry,includeminor) > 0) {
+										newer = entry;
+									}
+								} else {
+									//Always get the latest build of version if we're updating
+									if (compare(newer,entry,true) > 0) {
+										newer = entry;
+									}
+								}
+							}
+						}
+					}
+				}
+				if (newer != null) {
+					String search;
+					if (isapp) {
+						//search for -mac- file
+						search = "-mac-";
+					} else if (isexe) {
+						//search for -win- file
+						search = "-win-";
+					} else {
+						//search for -other- file
+						search = "-other-";
+					}
+					NodeList links = newer.getElementsByTagName(ATOM_LINK);
+					String thislink = "";
+					if (links != null) {
+						if (links.getLength() > 0) {
+							for(int i = 0 ; i < links.getLength();i++) {
+								Element link = (Element)links.item(i);
+								String rel = getAttributeValue(link,ATOM_LINK_REL,"");
+								String href = getAttributeValue(link,ATOM_LINK_HREF,"");
+								if (ATOM_LINK_ENCLOSURE.compareTo(rel) == 0) {
+									if (href.lastIndexOf(search) > href.lastIndexOf("/")) {
+										download = href;
+									}
+								} else if ("".compareTo(rel) == 0) {
+									thislink = href;
+								}
+							}
+						}
+					}
+					StringBuffer versionhtml = new StringBuffer();
+					if (download != null) {
+						versionhtml.append("<html><table><tr><td>");
+						versionhtml.append("<h1><font face=Arial>"+getTagValue(newer, ATOM_TITLE)+"</h1>");
+						versionhtml.append("<font face=Arial>Link: <a href=\""+thislink+"\">"+thislink+"</a>");
+						versionhtml.append("<br><font face=Arial>Version: "+getTagValue(newer,LIMEGREEN_VERSION)+" Build: "+getTagValue(newer,LIMEGREEN_BUILD));
+						versionhtml.append("<br><br><font face=Arial>"+getTagValue(newer,ATOM_CONTENT));
+						versionhtml.append("</td></tr></table></html>");
+						
+					}
+					return versionhtml.toString();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+	private void constructWindow(String version) {
+		//Construct window
+		int width = 550;
+		int height = 350;
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		Point center = ge.getCenterPoint();
+		window = new JFrame(appname + " - " + AUTOUPDATE);
+			Container pane = window.getContentPane();
+			editor = new JTextPane();
+			scroll = new JScrollPane(editor);
+				editor.setContentType("text/html");
+				editor.setText(version);
+				editor.addHyperlinkListener(this);
+				editor.setEditable(false);
+			pane.add(scroll,BorderLayout.CENTER);
+			checkpanel = new JPanel();
+				checkforupdatesbutton = new JCheckBox("Check for updates?",autoupdate);
+					checkforupdatesbutton.addItemListener(this);
+				checkpanel.add(checkforupdatesbutton);
+				if (allowexperimental) {
+					includeexperimentalbutton = new JCheckBox("Include Experimental?",includeexperimental);
+						includeexperimentalbutton.addItemListener(this);
+					checkpanel.add(includeexperimentalbutton);
+				}
+				if (allowminor) {
+					includeminorbutton = new JCheckBox("Include Minor?",includeminor);
+						includeminorbutton.addItemListener(this);
+					checkpanel.add(includeminorbutton);
+				}
+				cancelbutton = new JButton("Cancel");
+					cancelbutton.addActionListener(this);
+				checkpanel.add(cancelbutton);
+				updatebutton = new JButton("Update");
+					updatebutton.addActionListener(this);
+				checkpanel.add(updatebutton);
+			pane.add(checkpanel,BorderLayout.SOUTH);
+			installpanel = new JPanel();
+				progressBar = new JProgressBar();
+				installpanel.add(progressBar,BorderLayout.CENTER);
+				installbutton = new JButton("Install and relaunch");
+					installbutton.addActionListener(this);
+					installbutton.setEnabled(false);
+				installpanel.add(installbutton, BorderLayout.WEST);
+		window.setBounds((int) (center.getX() - width/2),(int) (center.getY() - height/2), width, height);
+		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		window.show();
+	}
 	public void itemStateChanged(ItemEvent e) {
 		Object source = e.getSource();
 		if (source == checkforupdatesbutton) {
-			checkforupdates = e.getStateChange() == ItemEvent.SELECTED; 
+			autoupdate = e.getStateChange() == ItemEvent.SELECTED; 
 		} else if (source == includeexperimentalbutton) {
 			includeexperimental = e.getStateChange() == ItemEvent.SELECTED;
 		} else if (source == includeminorbutton) {
@@ -182,7 +392,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 		window.hide();
 	}
 	public boolean getCheckForUpdates() {
-		return checkforupdates;
+		return autoupdate;
 	}
 	public boolean getIncludeExperiemental() {
 		return includeexperimental;
@@ -213,8 +423,10 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 		try {
 			int i = 0;
 			//while file exists work out name to download to incrementing suffix
-			//TODO: change to just suffix filename downloaded from internet
-			while ((downloadfile = new File(tempdir + s + appname + AUTOUPDATE + i + ".zip")).exists()) {
+			//TODO: This doesn't work if file is redirect from the download url
+			String downloadfilename = download.substring(download.lastIndexOf("/")+1);
+			int pos = downloadfilename.lastIndexOf(".");
+			while ((downloadfile = new File(tempdir + s + downloadfilename.substring(0,pos) + "-" + i + downloadfilename.substring(pos))).exists()) {
 				i++;
 			}
 			if (downloadfile.createNewFile()) {
@@ -357,17 +569,17 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 	private static boolean launchApplication(String path, String application) {
 		try {
 			if (application.endsWith(".jar")) {
-				if (osname.startsWith("mac os x")) {
+				if (isosx) {
 					System.out.println(path+s+application);
 					Runtime.getRuntime().exec("open "+path+s+application).waitFor();
 				} else {
 					Runtime.getRuntime().exec("java "+path+s+application).waitFor();
 				}
 			} else {
-				if (osname.startsWith("mac os x")) {
+				if (isosx) {
 					System.out.println(path);
 					Runtime.getRuntime().exec("open -a "+path).waitFor();
-				} else if (osname.startsWith("windows")) {
+				} else if (iswindows) {
 					Runtime.getRuntime().exec(path+s+application).waitFor();
 				} else {
 					Runtime.getRuntime().exec("java "+path+s+application).waitFor();
@@ -454,6 +666,31 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener {
 			Thread.sleep(s * 1000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+		}
+	}
+	public void hyperlinkUpdate(HyperlinkEvent e) {
+		try {
+			if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+				String url = e.getURL().toString();
+				if (isosx) {
+					FileManager.openURL(url);
+				} else if(iswindows) {
+					Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
+				} else {
+					String[] browsers = {"firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape" };
+					String browser = null;
+					for (int count = 0; count < browsers.length && browser == null; count++) {
+						if (Runtime.getRuntime().exec(new String[] {"which", browsers[count]}).waitFor() == 0) {
+							browser = browsers[count];
+						}
+					}
+					if (browser != null) {
+						Runtime.getRuntime().exec(new String[] {browser, url});
+					}
+				}
+			}
+		} catch (Exception ex) {
+
 		}
 	}
 }
