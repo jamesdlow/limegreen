@@ -111,13 +111,13 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 					constructWindow(versioninfo);
 				} else {
 					//TODO: Not sure if we need to make sure number is correct
-					cancellistener.actionPerformed(new ActionEvent(this,0,""));
+					cancellistener.actionPerformed(new ActionEvent(this,0,"Error parsing XML"));
 				}
 			} catch (URISyntaxException e) {
 				Error("Could not get running applcation: "+e.getMessage());
 			} catch (IOException e) {
 				//Not connected to the internet or can't contact webpage, just go on
-				cancellistener.actionPerformed(new ActionEvent(this,0,""));
+				cancellistener.actionPerformed(new ActionEvent(this,0,"Could not connect to server/Not connected to internet"));
 			}
 		}
 	}
@@ -402,7 +402,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 	}
 	private void cancel(ActionEvent e) {
 		hideWindow();
-		cancellistener.actionPerformed(e);
+		cancellistener.actionPerformed(new ActionEvent(e.getSource(),e.getID(),"User Cancelled"));
 	}
 	private void update() {
 		try {

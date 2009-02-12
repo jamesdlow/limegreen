@@ -1,4 +1,4 @@
-package com.jameslow;
+package com.jameslow.autoupdate;
 
 import java.awt.Color;
 import java.io.File;
@@ -29,7 +29,7 @@ public class XMLHelper {
 			setElement((Element) document.appendChild(document.createElement(root)));
 		} catch (ParserConfigurationException e) {
 			//TODO: Not quite sure when this would happen
-			Main.Logger().severe("Could not extantiate XML builder: " + e.getMessage());
+			System.out.println("Could not extantiate XML builder: " + e.getMessage());
 		}
 	}
 	public XMLHelper(Element element) {
@@ -49,11 +49,11 @@ public class XMLHelper {
 			} catch (Exception e) {
 				Document document = builder.newDocument();
 				setElement((Element) document.appendChild(document.createElement(root)));
-				Main.Logger().warning("Could not load XML file: " + e.getMessage());
+				System.out.println("Could not load XML file: " + e.getMessage());
 			}
 		} catch (ParserConfigurationException e) {
 			//TODO: Not quite sure when this would happen
-			Main.Logger().severe("Could not extantiate XML builder: " + e.getMessage());
+			System.out.println("Could not extantiate XML builder: " + e.getMessage());
 		}
 	}
 	public void save(String filename) {
@@ -67,7 +67,7 @@ public class XMLHelper {
 			StreamResult result = new StreamResult(file);
 			transformer.transform(source, result);
 		} catch (Exception e) {
-			Main.Logger().severe("Could not save XML file: " + e.getMessage());
+			System.out.println("Could not save XML file: " + e.getMessage());
 		}
 	}
 	private Element getElement() {

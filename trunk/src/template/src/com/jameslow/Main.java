@@ -165,6 +165,7 @@ public class Main {
 			};
 			ActionListener cancel = new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
+					logger.warning(e.getActionCommand());
 					saveUpdateSettings();
 					if (!cmd.getQuiet()) {
 						if (window_name == null) {
