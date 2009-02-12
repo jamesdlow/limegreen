@@ -9,6 +9,9 @@
 	<property name="tools" location="tools"/>
 		<property name="manifest" location="${tools}/manifest"/>
 		<property name="onejar" location="${tools}/onejar"/>
+		<property name="autoupdate" location="${tools}/autoupdate"/>
+			<property name="atomfile" value="${name}.xml"/>
+			<property name="atompath" location="${atomfile}"/>
 		<property name="jarbundler" location="${tools}/jarbundler"/>
 		<property name="jsmooth" location="${tools}/jsmooth"/>
 			<property name="jsmooth.edit" location="${jsmooth}/editor"/>
@@ -41,6 +44,7 @@
 	</condition>
 	<echo message="Google classpath set to ${google.classpath}"/>
 	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="${google.classpath}" name="gcupload"/>
+	<taskdef classname="com.jameslow.autoupdate.Generator" classpath="${autoupdate}" name="autoupdate"/>
 	
 	<condition property="onejar.do">
 		<istrue value="${onejar.use}"/>
@@ -59,6 +63,21 @@
 	</condition>
 	<condition property="mainclass" value="${main.class}">
 		<isfalse value="${onejar.use}"/>
+	</condition>
+	<condition property="appbaseuse" value="${autoupdate.applinkbase}">
+		<isfalse value="${autoupdate.usegoogle}"/>
+	</condition>
+	<condition property="appbaseuse" value="http://${google.project}.googlecode.com/files">
+		<istrue value="${autoupdate.usegoogle}"/>
+	</condition>
+	<condition property="google.autoupdate">
+		<istrue value="${autoupdate.usegoogle}"/>
+	</condition>
+	<condition property="ftp.autoupdate">
+		<isfalse value="${autoupdate.usegoogle}"/>
+	</condition>
+	<condition property="ftp.dosource">
+		<istrue value="${ftp.source}"/>
 	</condition>
 	<condition property="is.mac">
 		<os family="mac"/>
@@ -97,7 +116,15 @@
 		<javac srcdir="${onejar}" destdir="${onejar}"
 			source="1.4" target="1.4"
 			failonerror="true"
-        	includes="**/*.java">
+			includes="**/*.java">
+		</javac>
+	</target>
+	
+	<target name="compile.autoupdate" description="Compile autoupdate">
+		<javac srcdir="${autoupdate}" destdir="${autoupdate}"
+			source="1.4" target="1.4"
+			failonerror="true"
+			includes="**/*.java">
 		</javac>
 	</target>
 	
@@ -166,7 +193,7 @@
 	<target name="jar.onejar" depends="compile" if="onejar.do">
 		<echo message="Placing library jars witin main jar, onejar.use=${onejar.use}."/>
 		<copy todir="${jar.lib}">
-			<fileset dir="${lib}"/>		
+			<fileset dir="${lib}"/>
 		</copy>
 		<!--
 		<manifestclasspath property="jar.classpath" jarfile="${jarfile.main}">
@@ -178,7 +205,7 @@
 		</jar>
 		<jar jarfile="${jarfile}" manifest="${manifest}/onejar-MANIFEST.MF">
 			<fileset dir="${jar}"/>
-		    <fileset dir="${onejar}" includes="**/*.class"/>
+			<fileset dir="${onejar}" includes="**/*.class"/>
 		</jar>
 	</target>
 	<target name="jar.include" depends="compile" if="include.do">
@@ -215,39 +242,39 @@
 			includes="${name}.app/**" />
 	</target>
 	<target name="notdmg" description="Set distribution if not using dmg" if="not.mac">
-		<property name="mac.dist" value="${mac.zip}"/>
-		<property name="mac.dist.full" location="${mac.zip.full}"/>
+		<property name="mac.dmg" value="${mac.zip}"/>
+		<property name="mac.dmg.full" location="${mac.zip.full}"/>
 		<property name="mac.sf.type" value="binary_zip"/>
 	</target>
 	<target name="dmg" depends="mac.zip" description="Make dmg" if="is.mac">
-		<property name="mac.dist" value="${name}-${new.version}.dmg"/>
-		<property name="mac.dist.full" location="${dist}/${mac.dist}"/>
+		<property name="mac.dmg" value="${name}-${new.version}.dmg"/>
+		<property name="mac.dmg.full" location="${dist}/${mac.dmg}"/>
 		<property name="mac.sf.type" value="dmg"/>
 		<!-- Requires OSX -->
 		<exec dir="${dist}" executable="hdiutil">
-			<arg line="create -ov -srcfolder ${name}.app ${mac.dist}"/>
+			<arg line="create -ov -srcfolder ${name}.app ${mac.dmg}"/>
 		</exec>
 	</target>
 	<target name="win.zip" depends="version,exe" description="Make windows zip">
-		<property name="win.dist" value="${name}-win-${new.version}.zip"/>
-		<property name="win.dist.full" location="${dist}/${win.dist}"/>
-		<zip destfile="${win.dist.full}"
+		<property name="win.zip" value="${name}-win-${new.version}.zip"/>
+		<property name="win.zip.full" location="${dist}/${win.zip}"/>
+		<zip destfile="${win.zip.full}"
 			basedir="${dist}"
 			includes="${name}.exe" />
 	</target>
 	<target name="other.zip" depends="version,jar" description="Make other zip">
-		<property name="other.dist" value="${name}-other-${new.version}.zip"/>
-		<property name="other.dist.full" location="${dist}/${other.dist}"/>
-		<zip destfile="${other.dist.full}"
+		<property name="other.zip" value="${name}-other-${new.version}.zip"/>
+		<property name="other.zip.full" location="${dist}/${other.zip}"/>
+		<zip destfile="${other.zip.full}"
 			basedir="${dist}"
 			includes="${name}.jar" />
 	</target>
 	<target name="source.zip" depends="version,jar" description="Make source zip">
-		<property name="source.dist" value="${name}-source-${new.version}.zip"/>
-		<property name="source.dist.full" location="${dist}/${source.dist}"/>
+		<property name="source.zip" value="${name}-source-${new.version}.zip"/>
+		<property name="source.zip.full" location="${dist}/${source.zip}"/>
 		<move file="secret.properties" tofile="secret.temp.properties"/>
 		<copy file="secret.example.properties" tofile="secret.properties"/>
-		<zip destfile="${source.dist.full}">
+		<zip destfile="${source.zip.full}">
 			<fileset dir=".">
 				<include name="**"/>
 				<exclude name="**/.svn/**"/>
@@ -267,12 +294,62 @@
 		<!-- At the moment build requires nothing else -->
 	</target>
 	
+	<target name="autoupdate" description="Create autoupdate entry">
+		<autoupdate
+			atomfile="${atompath}"
+			apppage="${apppage}"
+			appname="${application.name}"
+			applinkbase="${appbaseuse}"
+			macdmg="${mac.dmg}"
+			maczip="${mac.zip}"
+			winzip="${win.zip}"
+			otherzip="${other.zip}"
+			build="${build}"
+			version="${new.version}"
+		/>
+	</target>
+	
 	<target name="release" description="Create release dmg/zips" depends="dmg,win.zip,other.zip,source.zip">
 		<!-- At the moment release requires nothing else -->
 	</target>
 
-	<target name="ftp" description="Deploy All To FTP Location" depends="release">
-		<!-- TODO -->
+	<target name="ftp.autoupdate" description="Deploy Autoupdate File To FTP" if="ftp.autoupdate">
+		<ftp server="${ftp.server}"
+			port="${ftp.port}"
+			remotedir="${ftp.dir}"
+			userid="${ftp.username}"
+			password="${ftp.password}">
+			<fileset>
+				<include name="${atompath}"/>
+			</fileset>
+		</ftp>
+	</target>
+
+	<target name="ftp.source" description="Deploy Source File To FTP" if="ftp.dosource">
+		<ftp server="${ftp.server}"
+			port="${ftp.port}"
+			remotedir="${ftp.dir}"
+			userid="${ftp.username}"
+			password="${ftp.password}">
+			<fileset>
+				<include name="${source.zip}"/>
+			</fileset>
+		</ftp>
+	</target>
+
+	<target name="ftp" description="Deploy All To FTP Location" depends="release,ftp.autoupdate,ftp.source">
+		<ftp server="${ftp.server}"
+			port="${ftp.port}"
+			remotedir="${ftp.dir}"
+			userid="${ftp.username}"
+			password="${ftp.password}">
+			<fileset>
+				<include name="${mac.dmg}"/>
+				<include name="${mac.zip}"/>
+				<include name="${win.zip}"/>
+				<include name="${other.zip}"/>
+			</fileset>
+		</ftp>
 	</target>
 
 	<target name="sourceforge" description="Deploy All To Sourceforge" depends="release">
@@ -290,55 +367,66 @@
 			password="${sourceforge.password}"
 			releasedate="${sourceforge.date}">
 			<filespec
-				file="${source.dist.full}"
+				file="${source.zip.full}"
 				filetype="source_zip"
 				processortype="platform_independent"/>
 			<filespec
-				file="${other.dist.full}"
+				file="${other.zip.full}"
 				filetype="binary_zip"
 				processortype="platform_independent"/>
 			<filespec
-				file="${mac.dist.full}"
+				file="${mac.dmg.full}"
 				filetype="${mac.sf.type}"
 				processortype="any"/>
 			<filespec
-				file="${win.dist.full}"
+				file="${win.zip.full}"
 				filetype="binary_zip"
 				processortype="i386"/>
 		</sfpublish>
 	</target>
-
-	<target name="google" description="Deploy All To GoogleCode" depends="release">
+	
+	<target name="google.autoupdate" description="Deploy Autoupdate File To Google" if="google.autoupdate">
 		<gcupload
 			username="${google.username}"
 			password="${google.password}"
 			projectname="${google.project}"
-			filename="${source.dist.full}"
-			targetfilename="${source.dist}"
+			filename="${atompath}"
+			targetfilename="${atomfile}"
+			summary="${name} Autoupdate"
+			labels="${name}"/>
+	</target>
+	
+	<target name="google" description="Deploy All To GoogleCode" depends="release,google.autoupdate">
+		<gcupload
+			username="${google.username}"
+			password="${google.password}"
+			projectname="${google.project}"
+			filename="${source.zip.full}"
+			targetfilename="${source.zip}"
 			summary="${name} Source"
 			labels="OpSys-Windows, Type-Source, ${name}"/>
 		<gcupload
 			username="${google.username}"
 			password="${google.password}"
 			projectname="${google.project}"
-			filename="${other.dist.full}"
-			targetfilename="${other.dist}"
+			filename="${other.zip.full}"
+			targetfilename="${other.zip}"
 			summary="${name} All Platforms"
 			labels="Featured, OpSys-All, OpSys-Linux, Type-Executable, ${name}"/>
 		<gcupload
 			username="${google.username}"
 			password="${google.password}"
 			projectname="${google.project}"
-			filename="${mac.dist.full}"
-			targetfilename="${mac.dist}"
+			filename="${mac.dmg.full}"
+			targetfilename="${mac.dmg}"
 			summary="${name} Mac OSX"
 			labels="Featured, OpSys-OSX, Type-Executable, ${name}"/>
 		<gcupload
 			username="${google.username}"
 			password="${google.password}"
 			projectname="${google.project}"
-			filename="${win.dist.full}"
-			targetfilename="${win.dist}"
+			filename="${win.zip.full}"
+			targetfilename="${win.zip}"
 			summary="${name} Windows"
 			labels="Featured, OpSys-Windows, Type-Executable, ${name}"/>
 	</target>
