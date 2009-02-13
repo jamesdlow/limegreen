@@ -2,6 +2,8 @@ package com.jameslow;
 
 import java.awt.Color;
 import java.io.File;
+import java.util.logging.Logger;
+
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
@@ -20,6 +22,7 @@ public class XMLHelper {
 	private static final String NAME = "Name";
 	private Element element;
 	private boolean isnewnode = false;
+	private Logger logger;
 	
 	public XMLHelper(String root) {
 		try {
@@ -29,7 +32,7 @@ public class XMLHelper {
 			setElement((Element) document.appendChild(document.createElement(root)));
 		} catch (ParserConfigurationException e) {
 			//TODO: Not quite sure when this would happen
-			Main.Logger().severe("Could not extantiate XML builder: " + e.getMessage());
+			severe("Could not extantiate XML builder: " + e.getMessage());
 		}
 	}
 	public XMLHelper(Element element) {
@@ -49,11 +52,11 @@ public class XMLHelper {
 			} catch (Exception e) {
 				Document document = builder.newDocument();
 				setElement((Element) document.appendChild(document.createElement(root)));
-				Main.Logger().warning("Could not load XML file: " + e.getMessage());
+				warning("Could not load XML file: " + e.getMessage());
 			}
 		} catch (ParserConfigurationException e) {
 			//TODO: Not quite sure when this would happen
-			Main.Logger().severe("Could not extantiate XML builder: " + e.getMessage());
+			severe("Could not extantiate XML builder: " + e.getMessage());
 		}
 	}
 	public void save(String filename) {
@@ -67,8 +70,14 @@ public class XMLHelper {
 			StreamResult result = new StreamResult(file);
 			transformer.transform(source, result);
 		} catch (Exception e) {
-			Main.Logger().severe("Could not save XML file: " + e.getMessage());
+			severe("Could not save XML file: " + e.getMessage());
 		}
+	}
+	private void severe(String msg) {
+		Main.Logger().severe(msg);
+	}
+	private void warning(String msg) {
+		Main.Logger().warning(msg);
 	}
 	private Element getElement() {
 		return element;
@@ -103,6 +112,12 @@ public class XMLHelper {
 	}
 	public void setAttribute(String subnode, String attribute, String value) {
 		getSubNode(subnode).setAttribute(attribute, value);
+	}
+	public String getAttribute(String attribute) {
+		return element.getAttribute(attribute);
+	}
+	public String getAttribute(String subnode, String attribute) {
+		return getSubNode(subnode).getAttribute(attribute);
 	}
 	public void deleteSubNode(String subnode) {
 		int pos = subnode.lastIndexOf(DELIM);
