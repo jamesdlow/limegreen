@@ -129,7 +129,8 @@ public class Settings {
 	private void loadProperties() {
 		ResourceBundle build = os.getBuildProps();
 			builddate = build.getString("build.date");
-			buildnumber = checkIntProperty(build,"build.number",0);
+			//build number written into file, is incremented by 1;
+			buildnumber = checkIntProperty(build,"build.number",1)-1;
 			version = build.getString("build.version");
 			mainclass = build.getString("main.class");
 			title = build.getString("application.name");

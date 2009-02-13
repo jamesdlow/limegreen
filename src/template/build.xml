@@ -293,24 +293,24 @@
 	<target name="build" description="Build exe,app" depends="exe,app">
 		<!-- At the moment build requires nothing else -->
 	</target>
-	
-	<target name="autoupdate" description="Create autoupdate entry">
-		<autoupdate
-			atomfile="${atompath}"
-			apppage="${apppage}"
-			appname="${application.name}"
-			applinkbase="${appbaseuse}"
-			macdmg="${mac.dmg}"
-			maczip="${mac.zip}"
-			winzip="${win.zip}"
-			otherzip="${other.zip}"
-			build="${build}"
-			version="${new.version}"
-		/>
-	</target>
-	
+		
 	<target name="release" description="Create release dmg/zips" depends="dmg,win.zip,other.zip,source.zip">
 		<!-- At the moment release requires nothing else -->
+	</target>
+	
+	<target name="autoupdate" description="Create autoupdate entry" depends="release">
+		<autoupdate
+			atompath="${atompath}"
+			apppage="${autoupdate.apppage}"
+			appname="${application.name}"
+			applinkbase="${appbaseuse}"
+			macdmg="${mac.dmg.full}"
+			maczip="${mac.zip.full}"
+			winzip="${win.zip.full}"
+			otherzip="${other.zip.full}"
+			build="${build.number}"
+			version="${new.version}"
+		/>
 	</target>
 
 	<target name="ftp.autoupdate" description="Deploy Autoupdate File To FTP" if="ftp.autoupdate">

@@ -257,7 +257,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 					if (entries.getLength() > 0) {
 						for(int i = 0 ; i < entries.getLength();i++) {
 							Element entry = (Element)entries.item(i);
-							if (!Boolean.parseBoolean(getTagValue(entry, LIMEGREEN_EXPERIMENTAL)) || allowexperimental) {
+							if (!Boolean.parseBoolean(getTagValue(entry, LIMEGREEN_EXPERIMENTAL)) || (includeexperimental)) {
 								if (newer == null) {
 									//Include minor here, to see if we update if version the same, but builds different
 									if (compare(getIntArray(version,new int[0]),build,entry,includeminor) > 0) {
@@ -379,7 +379,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 		}
 	}
 	public void actionPerformed(ActionEvent e) {
-		JButton source = (JButton)e.getSource();
+		Object source = e.getSource();
 		if (source == installbutton) {
 			installAndRelaunch(e);
 		} else if (source == updatebutton) {
