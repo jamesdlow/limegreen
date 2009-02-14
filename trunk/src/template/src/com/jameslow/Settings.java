@@ -47,6 +47,9 @@ public class Settings {
 	private boolean allowminor;
 	private boolean allowexperimental;
 	private boolean allowautoupdate;
+	private boolean usegoogle;
+	private String applinkbase;
+	private String googleproject;
 	
 	public static final String HEIGHT = "Height";
 	public static final String WIDTH = "Width";
@@ -134,6 +137,9 @@ public class Settings {
 			version = build.getString("build.version");
 			mainclass = build.getString("main.class");
 			title = build.getString("application.name");
+			usegoogle = checkBooleanProperty(build,"autoupdate.usegoogle");
+			applinkbase = build.getString("autoupdate.applinkbase");
+			googleproject = build.getString("google.project");
 			//mainclass = readManifest(Attributes.Name.MAIN_CLASS);
 			//build = readManifest("Build-Number");
 			//version = readManifest("Build-Version");
@@ -145,6 +151,13 @@ public class Settings {
 			logtofile = getBooleanProperty("log.tofile");
 			logtoconsole = getBooleanProperty("log.toconsole");
 			updateurl = getProperty("update.url");
+			if (updateurl == null || "".compareTo(updateurl) == 0) {
+				if (usegoogle) {
+					updateurl = "http://" + googleproject + ".googlecode.com/files/" + title + ".xml";
+				} else {
+					updateurl = applinkbase + "/" + title + ".xml";
+				}
+			}
 			minor = getBooleanProperty("update.minor");
 			experimental = getBooleanProperty("update.experimental");
 			autoupdate = getBooleanProperty("update.autoupdate");
@@ -166,6 +179,13 @@ public class Settings {
 		} catch (NumberFormatException e) {
 			return def;
 		}
+	}
+	public boolean checkBooleanProperty(ResourceBundle bundle, String key) {
+		//try {
+			return Boolean.parseBoolean(bundle.getString(key));
+		//} catch (NumberFormatException e) {
+		//	return def;
+		//}
 	}
 	public boolean getBooleanProperty(String key) {
 		return Boolean.parseBoolean(getProperty(key));
