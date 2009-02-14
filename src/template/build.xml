@@ -44,7 +44,7 @@
 	</condition>
 	<echo message="Google classpath set to ${google.classpath}"/>
 	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="${google.classpath}" name="gcupload"/>
-	<taskdef classname="com.jameslow.autoupdate.Generator" classpath="${autoupdate}" name="autoupdate"/>
+	<taskdef classname="com.jameslow.update.Generator" classpath="${autoupdate}" name="autoupdate"/>
 	
 	<condition property="onejar.do">
 		<istrue value="${onejar.use}"/>
@@ -70,11 +70,20 @@
 	<condition property="appbaseuse" value="http://${google.project}.googlecode.com/files">
 		<istrue value="${autoupdate.usegoogle}"/>
 	</condition>
+	<condition property="autoupdate.do">
+		<istrue value="${autoupdate.enable}"/>
+	</condition>
 	<condition property="google.autoupdate">
-		<istrue value="${autoupdate.usegoogle}"/>
+		<and>
+			<istrue value="${autoupdate.usegoogle}"/>
+			<istrue value="${autoupdate.enable}"/>
+		</and>
 	</condition>
 	<condition property="ftp.autoupdate">
-		<isfalse value="${autoupdate.usegoogle}"/>
+		<and>
+			<isfalse value="${autoupdate.usegoogle}"/>
+			<istrue value="${autoupdate.enable}"/>
+		</and>
 	</condition>
 	<condition property="ftp.dosource">
 		<istrue value="${ftp.source}"/>
@@ -298,7 +307,7 @@
 		<!-- At the moment release requires nothing else -->
 	</target>
 	
-	<target name="autoupdate" description="Create autoupdate entry" depends="release">
+	<target name="autoupdate" description="Create autoupdate entry" if="autoupdate.do" depends="release">
 		<autoupdate
 			atompath="${atompath}"
 			apppage="${autoupdate.apppage}"
@@ -313,7 +322,7 @@
 		/>
 	</target>
 
-	<target name="ftp.autoupdate" description="Deploy Autoupdate File To FTP" if="ftp.autoupdate">
+	<target name="ftp.autoupdate" description="Deploy Autoupdate File To FTP" if="ftp.autoupdate" depends="autoupdate">
 		<ftp server="${ftp.server}"
 			port="${ftp.port}"
 			remotedir="${ftp.dir}"
@@ -385,7 +394,7 @@
 		</sfpublish>
 	</target>
 	
-	<target name="google.autoupdate" description="Deploy Autoupdate File To Google" if="google.autoupdate">
+	<target name="google.autoupdate" description="Deploy Autoupdate File To Google" if="google.autoupdate" depends="autoupdate">
 		<gcupload
 			username="${google.username}"
 			password="${google.password}"

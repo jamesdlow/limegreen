@@ -10,8 +10,10 @@ import java.util.zip.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.xml.parsers.*;
+
 import org.w3c.dom.*;
 import org.xml.sax.*;
+
 import com.apple.eio.FileManager;
 
 //This is a big hack because I'm trying to get this into a single java class
@@ -73,6 +75,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 	private boolean isexe;
 	private String running;
 	private int apppos;
+	private String lastmsg = "";
 	
 	//Stuff associated with downloading and extracting update
 	public static final String AUTOUPDATE = "AutoUpdate";
@@ -107,17 +110,20 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 			    	isexe = iswindows && Pattern.compile("temp[0-9]+\\.jar").matcher(running).find();
 			    }
 			    String versioninfo;
-				if ((versioninfo = parseXML(versionxml, version, build)) != null) {
-					constructWindow(versioninfo);
-				} else {
-					//TODO: Not sure if we need to make sure number is correct
-					cancellistener.actionPerformed(new ActionEvent(this,0,"Error parsing XML"));
-				}
+			    try {
+			    	if ((versioninfo = parseXML(versionxml, version, build)) != null) {
+			    		constructWindow(versioninfo);
+			    	} else {
+			    		cancel("Version up to date.");
+			    	}
+			    } catch (Exception e) {
+			    	cancelError("Error parsing XML: "+e.getMessage());
+			    }
 			} catch (URISyntaxException e) {
-				Error("Could not get running applcation: "+e.getMessage());
+				cancelError("Could not get running applcation: "+e.getMessage());
 			} catch (IOException e) {
 				//Not connected to the internet or can't contact webpage, just go on
-				cancellistener.actionPerformed(new ActionEvent(this,0,"Could not connect to server/Not connected to internet"));
+				cancel("Could not connect to server/Not connected to internet: "+e.getMessage());
 			}
 		}
 	}
@@ -242,81 +248,77 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 		}
 		return 0;
 	}
-	private String parseXML(String xversionxml, String version, int build) {
+	private String parseXML(String xversionxml, String version, int build) throws ParserConfigurationException, SAXException, IOException {
 		if ("".compareTo(xversionxml) != 0) {
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			DocumentBuilder db;
-			try {
-				db = dbf.newDocumentBuilder();
-				Document dom = db.parse(new InputSource(new StringReader(xversionxml)));
-				Element docEle = dom.getDocumentElement();
-				NodeList entries = docEle.getElementsByTagName(ATOM_ENTRY);
-				//Go through entries looking for the newest one
-				Element newer = null;
-				if (entries != null) {
-					if (entries.getLength() > 0) {
-						for(int i = 0 ; i < entries.getLength();i++) {
-							Element entry = (Element)entries.item(i);
-							if (!Boolean.parseBoolean(getTagValue(entry, LIMEGREEN_EXPERIMENTAL)) || (includeexperimental)) {
-								if (newer == null) {
-									//Include minor here, to see if we update if version the same, but builds different
-									if (compare(getIntArray(version,new int[0]),build,entry,includeminor) > 0) {
-										newer = entry;
-									}
-								} else {
-									//Always get the latest build of version if we're updating
-									if (compare(newer,entry,true) > 0) {
-										newer = entry;
-									}
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder db;
+			db = dbf.newDocumentBuilder();
+			Document dom = db.parse(new InputSource(new StringReader(xversionxml)));
+			Element docEle = dom.getDocumentElement();
+			NodeList entries = docEle.getElementsByTagName(ATOM_ENTRY);
+			//Go through entries looking for the newest one
+			Element newer = null;
+			if (entries != null) {
+				if (entries.getLength() > 0) {
+					for(int i = 0 ; i < entries.getLength();i++) {
+						Element entry = (Element)entries.item(i);
+						if (!Boolean.parseBoolean(getTagValue(entry, LIMEGREEN_EXPERIMENTAL)) || (includeexperimental)) {
+							if (newer == null) {
+								//Include minor here, to see if we update if version the same, but builds different
+								if (compare(getIntArray(version,new int[0]),build,entry,includeminor) > 0) {
+									newer = entry;
+								}
+							} else {
+								//Always get the latest build of version if we're updating
+								if (compare(newer,entry,true) > 0) {
+									newer = entry;
 								}
 							}
 						}
 					}
 				}
-				if (newer != null) {
-					String search;
-					if (isapp) {
-						//search for -mac- file
-						search = "-mac-";
-					} else if (isexe) {
-						//search for -win- file
-						search = "-win-";
-					} else {
-						//search for -other- file
-						search = "-other-";
-					}
-					NodeList links = newer.getElementsByTagName(ATOM_LINK);
-					String thislink = "";
-					if (links != null) {
-						if (links.getLength() > 0) {
-							for(int i = 0 ; i < links.getLength();i++) {
-								Element link = (Element)links.item(i);
-								String rel = getAttributeValue(link,ATOM_LINK_REL,"");
-								String href = getAttributeValue(link,ATOM_LINK_HREF,"");
-								if (ATOM_LINK_ENCLOSURE.compareTo(rel) == 0) {
-									if (href.lastIndexOf(search) > href.lastIndexOf("/")) {
-										download = href;
-									}
-								} else if ("".compareTo(rel) == 0) {
-									thislink = href;
+			}
+			if (newer != null) {
+				String search;
+				if (isapp) {
+					//search for -mac- file
+					search = "-mac-";
+				} else if (isexe) {
+					//search for -win- file
+					search = "-win-";
+				} else {
+					//search for -other- file
+					search = "-other-";
+				}
+				NodeList links = newer.getElementsByTagName(ATOM_LINK);
+				String thislink = "";
+				if (links != null) {
+					if (links.getLength() > 0) {
+						for(int i = 0 ; i < links.getLength();i++) {
+							Element link = (Element)links.item(i);
+							String rel = getAttributeValue(link,ATOM_LINK_REL,"");
+							String href = getAttributeValue(link,ATOM_LINK_HREF,"");
+							if (ATOM_LINK_ENCLOSURE.compareTo(rel) == 0) {
+								if (href.lastIndexOf(search) > href.lastIndexOf("/")) {
+									download = href;
 								}
+							} else if ("".compareTo(rel) == 0) {
+								thislink = href;
 							}
 						}
 					}
-					StringBuffer versionhtml = new StringBuffer();
-					if (download != null) {
-						versionhtml.append("<html><table><tr><td>");
-						versionhtml.append("<h1><font face=Arial>"+getTagValue(newer, ATOM_TITLE)+"</h1>");
-						versionhtml.append("<font face=Arial>Link: <a href=\""+thislink+"\">"+thislink+"</a>");
-						versionhtml.append("<br><font face=Arial>Version: "+getTagValue(newer,LIMEGREEN_VERSION)+" Build: "+getTagValue(newer,LIMEGREEN_BUILD));
-						versionhtml.append("<br><br><font face=Arial>"+getTagValue(newer,ATOM_CONTENT));
-						versionhtml.append("</td></tr></table></html>");
-						
-					}
-					return versionhtml.toString();
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
+				StringBuffer versionhtml = new StringBuffer();
+				if (download != null) {
+					versionhtml.append("<html><table><tr><td>");
+					versionhtml.append("<h1><font face=Arial>"+getTagValue(newer, ATOM_TITLE)+"</h1>");
+					versionhtml.append("<font face=Arial>Link: <a href=\""+thislink+"\">"+thislink+"</a>");
+					versionhtml.append("<br><font face=Arial>Version: "+getTagValue(newer,LIMEGREEN_VERSION)+" Build: "+getTagValue(newer,LIMEGREEN_BUILD));
+					versionhtml.append("<br><br><font face=Arial>"+getTagValue(newer,ATOM_CONTENT));
+					versionhtml.append("</td></tr></table></html>");
+					
+				}
+				return versionhtml.toString();
 			}
 		}
 		return null;
@@ -385,7 +387,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 		} else if (source == updatebutton) {
 			update();
 		} else if (source == cancelbutton) {
-			cancel(e);
+			cancelHide(e);
 		}
 	}
 	private void hideWindow() {
@@ -400,9 +402,24 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 	public boolean getIncludeMinor() {
 		return includeminor;
 	}
-	private void cancel(ActionEvent e) {
+	private void cancelHide(ActionEvent e) {
 		hideWindow();
-		cancellistener.actionPerformed(new ActionEvent(e.getSource(),e.getID(),"User Cancelled"));
+		cancel(new ActionEvent(e.getSource(),e.getID(),"User Cancelled"));
+	}
+	private void cancelHide(String msg) {
+		hideWindow();
+		cancel(msg);
+	}
+	private void cancel(ActionEvent e) {
+		cancellistener.actionPerformed(e);
+	}
+	private void cancel(String msg) {
+		//TODO: Not sure if we need to make sure number is correct
+		cancel(new ActionEvent(this,0,msg));
+	}
+	private void cancelError(String msg) {
+		Error(msg,window);
+		cancel(msg);
 	}
 	private void update() {
 		try {
@@ -411,7 +428,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 			pane.add(installpanel,BorderLayout.SOUTH);
 			this.start();
 		} catch (Exception e) {
-			Error("Could not launch update program: " + e.getMessage());
+			cancelHide("Could not launch update program: " + e.getMessage());
 		}
 	}
 	public void run() {
@@ -419,7 +436,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
     }
 	
 	private void downloadUpdate() {
-		final String couldnot = "Autoupdate could not be completed.";
+		final String couldnot = "Autoupdate could not be completed: ";
 		try {
 			int i = 0;
 			//while file exists work out name to download to incrementing suffix
@@ -434,10 +451,10 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 				//TODO: check file integrity against size / MD5
 				installbutton.setEnabled(true);
 			} else {
-				Error(couldnot + " Could not create temporary file.");
+				cancelHide(couldnot + "Could not create temporary file.");
 			}
 		} catch (IOException e) {
-			Error(couldnot);
+			cancelHide(couldnot + e.getMessage());
 		}
 	}
 	private void installAndRelaunch(ActionEvent e) {
@@ -480,12 +497,11 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 			//deploy = "/Users/James/Documents/Programs/James/Eclipse/Limelight/build/dist/Limelight.app";
 			//launch = "Limelight.App";
 			Runtime.getRuntime().exec("java "+fullname+p+downloadfile.getAbsolutePath()+p+deploy+p+launch,null,new File(tempdir));
+			//Force quit here, then updatelistener only needs to handle things like saving settings
+			System.exit(0);
 		} catch (Exception ex) {
-			ex.printStackTrace();
-			Error(ex.getMessage());
+			cancelHide("Could not install a relaunch: " + ex.getMessage());
 		}
-		//Force quit here, then updatelistener only needs to handle things like saving settings
-		System.exit(0);
 	}
 	private void getHttpContent(String url, OutputStream out) throws IOException {
 		URL u = new URL(url); 
@@ -493,9 +509,13 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 		huc.setRequestMethod("GET"); 
 		huc.connect(); 
 		int code = huc.getResponseCode();
-		int length = huc.getContentLength();
-		copyInputStream(huc.getInputStream(), out, length);
-		out.close();
+		if (code >= 200 && code < 300) {
+			int length = huc.getContentLength();
+			copyInputStream(huc.getInputStream(), out, length);
+			out.close();
+		} else {
+			throw new IOException("Response code is "+code);
+		}
 		huc.disconnect();
 	}
 	private String getHttpContent(String url) throws IOException {
@@ -505,13 +525,15 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 		huc.connect(); 
 		int code = huc.getResponseCode();
 		StringBuffer result = new StringBuffer();
-		//if (code >= 200 && code < 300) {
-		BufferedReader in = new BufferedReader(new InputStreamReader(huc.getInputStream()));
-		String line;
-		while ((line = in.readLine()) != null) {
-			result.append(line);
+		if (code >= 200 && code < 300) {
+			BufferedReader in = new BufferedReader(new InputStreamReader(huc.getInputStream()));
+			String line;
+			while ((line = in.readLine()) != null) {
+				result.append(line);
+			}
+		} else {
+			throw new IOException("Response code is "+code);
 		}
-		//}
 		huc.disconnect();
 		return result.toString();
 	}
@@ -533,6 +555,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 	//We're at the download and extracting stage
 	public static void main(String[] args) {
 		try {
+			//TODO: Remove?
 			System.setProperty("com.apple.mrj.application.apple.menu.about.name",AUTOUPDATE);
 			System.setProperty("apple.laf.useScreenMenuBar","true");
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -587,6 +610,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 			}
 			return true;
 		} catch (Exception e) {
+			Error("Could not launch application: " + e.getMessage());
 			e.printStackTrace();
 			return false;
 		}
@@ -641,8 +665,9 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 			}
 			zipFile.close();
 			return true;
-		} catch (IOException ioe) {
-			Error("Could not extract zip file.");
+		} catch (IOException e) {
+			Error("Could not extract zip file: "+e.getMessage());
+			e.printStackTrace();
 			return false;
 		}
 	}
@@ -659,7 +684,10 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 	
 	//Common
 	public static void Error(String msg) {
-		System.out.println(msg);
+		Error(msg,null);
+	}
+	public static void Error(String msg, Component parent) {
+		JOptionPane.showMessageDialog(parent, msg);
 	}
 	public static void Pause(long s) {
 		try {
