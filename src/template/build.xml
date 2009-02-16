@@ -318,6 +318,9 @@
 	</target>
 	
 	<target name="autoupdate" description="Create autoupdate entry" if="autoupdate.do" depends="release">
+		<condition property="autoupdate.source" value="${source.zip.full}">
+			<istrue value="${ftp.source}"/>
+		</condition>
 		<autoupdate
 			atompath="${atompath}"
 			apppage="${autoupdate.apppage}"
@@ -327,6 +330,7 @@
 			maczip="${mac.zip.full}"
 			winzip="${win.zip.full}"
 			otherzip="${other.zip.full}"
+			sourcezip="${autoupdate.source}"
 			build="${build.number}"
 			version="${new.version}"
 		/>
