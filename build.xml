@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Limegreen" default="alltemplates" basedir=".">
-<!-- This doesn't work for Xcode right now: <project name="@ProjectName@" default="jar" basedir="."> -->
 	<property name="props" value="build.properties"/>
 	<property file="${props}"/>
 	<property name="secret" value="secret.properties"/>
@@ -60,7 +59,7 @@
 		<javac srcdir="${google}" destdir="${google}"
 			source="1.4" target="1.4"
 			failonerror="true"
-	       	includes="**/*.java">
+			includes="**/*.java">
 		</javac>
 	</target>
 	
@@ -81,13 +80,8 @@
 				<filter token="ProjectName" value="Template"/>
 			</filterset>
 		</copy>
-		<copy todir="${anttemplate}/tools/google">
-			<fileset dir="${google}">
-				<exclude name="**/.svn/**"/>
-			</fileset>
-		</copy>
-		<copy todir="${anttemplate}/tools/sourceforge">
-			<fileset dir="${sourceforge}">
+		<copy todir="${anttemplate}/tools">
+			<fileset dir="${tools}">
 				<exclude name="**/.svn/**"/>
 			</fileset>
 		</copy>
@@ -133,7 +127,7 @@
 		<input
 			message="Please input a new version. Current version ${build.version}"
 			addproperty="new.version"
-		 />
+		/>
 		<propertyfile file="${props}">
 			<entry key="build.version" value="${new.version}"/>
 		</propertyfile>
