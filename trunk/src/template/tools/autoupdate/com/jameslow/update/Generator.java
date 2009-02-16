@@ -40,6 +40,7 @@ public class Generator extends JFrame implements WindowListener, ItemListener, A
 	private String maczip;
 	private String winzip;
 	private String otherzip;
+	private String sourcezip;
 
 	//Constants
 	private static final String AUTOUPDATE = "AutoUpdate";
@@ -163,6 +164,9 @@ public class Generator extends JFrame implements WindowListener, ItemListener, A
 	public void setWinzip(String winzip) {
 		this.winzip = winzip;
 	}
+	public void setSourcezip(String sourcezip) {
+		this.sourcezip = sourcezip;
+	}
 	
 	public void createXML() {
 		//Create general stuff
@@ -208,9 +212,8 @@ public class Generator extends JFrame implements WindowListener, ItemListener, A
 		createZipLink(entry,"Win",winzip);
 		createZipLink(entry,"Mac", maczip);
 		createZipLink(entry,"Other",otherzip);
-		if ((new File(macdmg)).exists()) {
-			createEnclosureLink(entry,appname+" Mac Disk Image",macdmg,MIME_DMG);
-		}
+		createZipLink(entry,"Source",sourcezip);
+		createEnclosureLink(entry,appname+" Mac Disk Image",macdmg,MIME_DMG);
 		entry.setValue(ATOM_CONTENT,contenttextarea.getText());
 		
 		//Save
@@ -220,12 +223,15 @@ public class Generator extends JFrame implements WindowListener, ItemListener, A
 		createEnclosureLink(entry,appname+" "+title+" Zip",filepath,MIME_ZIP);
 	}
 	private void createEnclosureLink(XMLHelper entry, String fulltitle, String filepath, String type) {
-		XMLHelper link = entry.createSubNode(ATOM_LINK);
-		link.setAttribute(ATOM_LINK_REL, ATOM_LINK_REL_ENCLOSURE);
-		link.setAttribute(ATOM_LINK_TYPE, type);
-		link.setAttribute(ATOM_TITLE, fulltitle);
-		link.setAttribute(ATOM_LINK_LENGTH, ""+(new File(filepath)).length());
-		link.setAttribute(ATOM_LINK_HREF, applinkbase+s+getFileName(filepath));
+		File file = new File(filepath);
+		if (file.exists() && !file.isDirectory()) {
+			XMLHelper link = entry.createSubNode(ATOM_LINK);
+			link.setAttribute(ATOM_LINK_REL, ATOM_LINK_REL_ENCLOSURE);
+			link.setAttribute(ATOM_LINK_TYPE, type);
+			link.setAttribute(ATOM_TITLE, fulltitle);
+			link.setAttribute(ATOM_LINK_LENGTH, ""+(new File(filepath)).length());
+			link.setAttribute(ATOM_LINK_HREF, applinkbase+s+getFileName(filepath));
+		}
 	}
 	private String getFileName(String filepath) {
 		File file = new File(filepath);
