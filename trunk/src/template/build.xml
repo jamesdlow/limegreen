@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Template" default="jar" basedir=".">
+<project name="Template" default="build" basedir=".">
 	<property name="props" value="build.properties"/>
+	<property name="secret" value="secret.properties"/>
 	<property file="${props}"/>
+	<property file="${secret}"/>
 	<property name="name" value="${application.name}"/>
 	<!-- Preexisitng Directories -->
 	<property name="src" location="src"/>
 	<property name="lib" location="lib"/>
 	<property name="tools" location="tools"/>
+		<property name="antlib" location="${tools}/antlib"/>
 		<property name="manifest" location="${tools}/manifest"/>
 		<property name="onejar" location="${tools}/onejar"/>
 		<property name="autoupdate" location="${tools}/autoupdate"/>
@@ -18,7 +21,7 @@
 			<property name="jsmooth.infile" location="${jsmooth}/ant.jsmooth"/>
 		<property name="applejava" location="${tools}/applejava"/>
 		<property name="google" location="${tools}/google"/>
-	<!-- Output Directories -->	
+	<!-- Output Directories -->
 	<property name="build" location="build"/>
 		<property name="bin" location="${build}/bin"/>
 		<property name="dist" location="${build}/dist"/>
@@ -29,7 +32,7 @@
 		<property name="jar" location="${build}/jar"/>
 			<property name="jar.main" location="${jar}/main"/>
 			<property name="jar.lib" location="${jar}/lib"/>
-			<property name="jarfile.main" location="${jar.main}/main.jar"/>		
+			<property name="jarfile.main" location="${jar.main}/main.jar"/>
 		<property name="app" location="${build}/app"/>
 		<property name="exe" location="${build}/exe"/>
 	
@@ -45,6 +48,13 @@
 	<echo message="Google classpath set to ${google.classpath}"/>
 	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="${google.classpath}" name="gcupload"/>
 	<taskdef classname="com.jameslow.update.Generator" classpath="${autoupdate}" name="autoupdate"/>
+	<fileset id="ant.jars" dir="${antlib}">
+		<include name="**/*.jar"/>
+	</fileset>
+	<path id="ant.path">
+		<fileset refid="ant.jars"/>
+	</path>
+	<taskdef name="ftp" classname="org.apache.tools.ant.taskdefs.optional.net.FTP" classpathref="ant.path"/>
 	
 	<condition property="onejar.do">
 		<istrue value="${onejar.use}"/>
@@ -281,8 +291,8 @@
 	<target name="source.zip" depends="version,jar" description="Make source zip">
 		<property name="source.zip" value="${name}-source-${new.version}.zip"/>
 		<property name="source.zip.full" location="${dist}/${source.zip}"/>
-		<move file="secret.properties" tofile="secret.temp.properties"/>
-		<copy file="secret.example.properties" tofile="secret.properties"/>
+		<move file="${secret}" tofile="secret.temp.properties"/>
+		<copy file="secret.example.properties" tofile="${secret}"/>
 		<zip destfile="${source.zip.full}">
 			<fileset dir=".">
 				<include name="**"/>
@@ -328,8 +338,8 @@
 			remotedir="${ftp.dir}"
 			userid="${ftp.username}"
 			password="${ftp.password}">
-			<fileset>
-				<include name="${atompath}"/>
+			<fileset dir=".">
+				<include name="${atomfile}"/>
 			</fileset>
 		</ftp>
 	</target>
@@ -340,7 +350,7 @@
 			remotedir="${ftp.dir}"
 			userid="${ftp.username}"
 			password="${ftp.password}">
-			<fileset>
+			<fileset dir="${dist}">
 				<include name="${source.zip}"/>
 			</fileset>
 		</ftp>
@@ -352,7 +362,7 @@
 			remotedir="${ftp.dir}"
 			userid="${ftp.username}"
 			password="${ftp.password}">
-			<fileset>
+			<fileset dir="${dist}">
 				<include name="${mac.dmg}"/>
 				<include name="${mac.zip}"/>
 				<include name="${win.zip}"/>
