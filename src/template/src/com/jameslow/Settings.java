@@ -131,20 +131,19 @@ public class Settings {
 	}
 	private void loadProperties() {
 		ResourceBundle build = os.getBuildProps();
-			builddate = build.getString("build.date");
+			builddate = getProperty(build,"build.date");
 			//build number written into file, is incremented by 1;
 			buildnumber = checkIntProperty(build,"build.number",1)-1;
-			version = build.getString("build.version");
-			mainclass = build.getString("main.class");
-			title = build.getString("application.name");
+			version = getProperty(build,"build.version");
+			mainclass = getProperty(build,"main.class");
+			title = getProperty(build,"application.name");
 			usegoogle = checkBooleanProperty(build,"autoupdate.usegoogle");
-			applinkbase = build.getString("autoupdate.applinkbase");
-			googleproject = build.getString("google.project");
+			applinkbase = getProperty(build,"autoupdate.applinkbase");
+			googleproject = getProperty(build,"google.project");
 			//mainclass = readManifest(Attributes.Name.MAIN_CLASS);
 			//build = readManifest("Build-Number");
 			//version = readManifest("Build-Version");
-		
-		ResourceBundle main = os.getMainProps();
+			
 			abouttext = getProperty("about.text",title);
 			aboutimage = getProperty("about.image");
 			abouturl = getProperty("about.url","");
@@ -175,14 +174,14 @@ public class Settings {
 	}
 	public int checkIntProperty(ResourceBundle bundle, String key, int def) {
 		try {
-			return Integer.parseInt(bundle.getString(key));
+			return Integer.parseInt(getProperty(bundle,key));
 		} catch (NumberFormatException e) {
 			return def;
 		}
 	}
 	public boolean checkBooleanProperty(ResourceBundle bundle, String key) {
 		//try {
-			return Boolean.parseBoolean(bundle.getString(key));
+			return Boolean.parseBoolean(getProperty(bundle,key));
 		//} catch (NumberFormatException e) {
 		//	return def;
 		//}
@@ -200,13 +199,20 @@ public class Settings {
 		return getProperty(key,null);
 	}
 	public String getProperty(String key, String def) {
+		return getProperty(os.getMainProps(),key,def);
+	}
+	public String getProperty(ResourceBundle bundle, String key) {
+		return getProperty(bundle,key,"");
+	}
+	public String getProperty(ResourceBundle bundle, String key, String def) {
 		try {
-			return os.getMainProps().getString(key);
+			return bundle.getString(key);
 		} catch (Exception e) {
 			Main.Logger().warning("Property Not Found: " + key);
 			return def;
 		}
 	}
+
 	public String[] getPropertyList(String key) {
 		try {
 			return os.getMainProps().getString(key).split(",");

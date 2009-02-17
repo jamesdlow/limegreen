@@ -122,6 +122,7 @@ public class Generator extends JFrame implements WindowListener, ItemListener, A
 		Object source = e.getSource();
 		if (source == donebutton) {
 			active = false;
+			this.hide();
 		}
 	}
 	public void itemStateChanged(ItemEvent e) {
