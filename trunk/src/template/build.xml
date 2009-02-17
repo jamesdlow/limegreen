@@ -241,6 +241,9 @@
 	<target name="exe" depends="jar,create.jsmooth" description="Build exe">
 		<jsmoothgen project="${jsmooth.outfile}" skeletonroot="${jsmooth}/skeletons"/>
 	</target>
+	<target name="exe.run" depends="exe">
+		<exec dir="${dist}" executable="${dist}/${name}.exe"/>
+	</target>
 	<target name="app" depends="jar" description="Build app">
 		<jarbundler
 			name="${name}"
@@ -252,6 +255,11 @@
 			dir="${dist}"
 			mainclass="${mainclass}"
 			jar="${jarfile}"/>
+	</target>
+	<target name="app.run" depends="app" if="is.mac">
+		<exec dir="${dist}" executable="open">
+			<arg line="-a ${name}.app"/>
+		</exec>
 	</target>
 	<target name="mac.zip" depends="version,app" description="Make mac zip">
 		<property name="mac.zip" value="${name}-mac-${new.version}.zip"/>

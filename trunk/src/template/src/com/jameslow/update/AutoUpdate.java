@@ -121,6 +121,8 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 			    }
 			} catch (URISyntaxException e) {
 				cancelError("Could not get running applcation: "+e.getMessage());
+			} catch (IllegalArgumentException e) {
+				cancel("Could not connect to server/Not connected to internet: "+e.getMessage());
 			} catch (IOException e) {
 				//Not connected to the internet or can't contact webpage, just go on
 				cancel("Could not connect to server/Not connected to internet: "+e.getMessage());
