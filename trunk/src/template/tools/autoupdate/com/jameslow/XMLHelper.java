@@ -1,4 +1,4 @@
-package com.jameslow.update;
+package com.jameslow;
 
 import java.awt.Color;
 import java.io.File;
@@ -24,7 +24,14 @@ public class XMLHelper {
 	private boolean isnewnode = false;
 	private Logger logger;
 	
+	public XMLHelper() {
+		try {
+			logger = Main.Logger();
+		} catch (Exception e) {
+		}
+	}
 	public XMLHelper(String root) {
+		this();
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -36,13 +43,16 @@ public class XMLHelper {
 		}
 	}
 	public XMLHelper(Element element) {
+		this();
 		setElement(element);
 	}
 	public XMLHelper(Element element, boolean isnewnode) {
+		this();
 		setElement(element);
 		setIsNewNode(isnewnode);
 	}
 	public XMLHelper(String filename, String root) {
+		this();
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -64,7 +74,9 @@ public class XMLHelper {
 			Document document = element.getOwnerDocument();
 			document.getDocumentElement().normalize();
 			TransformerFactory tFactory = TransformerFactory.newInstance();
+			tFactory.setAttribute("indent-number", new Integer(4));
 			Transformer transformer = tFactory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			DOMSource source = new DOMSource(document);
 			File file = new File(filename);
 			StreamResult result = new StreamResult(file);
@@ -74,10 +86,18 @@ public class XMLHelper {
 		}
 	}
 	private void severe(String msg) {
-		System.out.println("Error: "+msg);
+		if (logger != null) {
+			logger.severe(msg);
+		} else {
+			System.out.println("Severe: "+msg);
+		}
 	}
 	private void warning(String msg) {
-		System.out.println("Warning: "+msg);
+		if (logger != null) {
+			logger.warning(msg);
+		} else {
+			System.out.println("Warning: "+msg);
+		}
 	}
 	private Element getElement() {
 		return element;
@@ -119,13 +139,28 @@ public class XMLHelper {
 	public String getAttribute(String subnode, String attribute) {
 		return getSubNode(subnode).getAttribute(attribute);
 	}
+	public NodeList getImediateElementsByTagName(String tagname) {
+		return getImediateElementsByTagName(element, tagname);
+	}
+	public NodeList getImediateElementsByTagName(Element el, String tagname) {
+		NodeList list = el.getElementsByTagName(tagname);
+		SimpleNodeList result = new SimpleNodeList();
+		int length = list.getLength();
+		for(int i=0; i < length; i++) {
+			Node node = list.item(i);
+			if ((Element) node.getParentNode() == el) {
+				result.add(node);
+			}
+		}
+		return result;
+	}
 	public void deleteSubNode(String subnode) {
 		int pos = subnode.lastIndexOf(DELIM);
 		if (pos >= 0) {
 			XMLHelper helper = getSubNode(subnode.substring(0, pos));
 			helper.deleteSubNode(subnode.substring(pos+1));
 		} else {
-			NodeList list = element.getElementsByTagName(subnode);
+			NodeList list = getImediateElementsByTagName(subnode);
 			try {
 				element.removeChild(list.item(0));
 			} catch (Exception e) {}
@@ -137,10 +172,12 @@ public class XMLHelper {
 			XMLHelper helper = getSubNode(subnode.substring(0, pos));
 			helper.deleteSubNodes(subnode.substring(pos+1));
 		} else {
-			NodeList list = element.getElementsByTagName(subnode);
+			NodeList list = getImediateElementsByTagName(subnode);
 			int length = list.getLength();
 			for(int i=0; i < length; i++) {
-				element.removeChild(list.item(0));
+				try {
+					element.removeChild(list.item(i));
+				} catch (Exception e) {}
 			}
 		}	
 	}
@@ -149,12 +186,12 @@ public class XMLHelper {
 		Element sub = element;
 		boolean isnew = false;
 		for (int i=0; i<nodes.length; i++) {
-			Element tempsub = (Element) sub.getElementsByTagName(nodes[i]).item(0);
-			if (tempsub == null) {
+			NodeList list = getImediateElementsByTagName(sub,nodes[i]);
+			if (list.getLength() > 0) {
+				sub = (Element) list.item(0);				
+			} else {
 				sub = (Element) sub.appendChild(element.getOwnerDocument().createElement(nodes[i]));
 				isnew=true;
-			} else {
-				sub = tempsub;
 			}
 		}
 		return new XMLHelper(sub,isnew);
@@ -181,7 +218,6 @@ public class XMLHelper {
 			XMLHelper helper = getSubNode(subnode.substring(0, pos));
 			return helper.createSubNode(subnode.substring(pos+1));
 		} else {
-			NodeList list = element.getElementsByTagName(subnode);
 			return new XMLHelper((Element) element.appendChild(element.getOwnerDocument().createElement(subnode)),true);
 		}		
 	}
@@ -191,7 +227,7 @@ public class XMLHelper {
 			XMLHelper helper = getSubNode(subnode.substring(0, pos));
 			return helper.getSubNodeList(subnode.substring(pos+1));
 		} else {
-			NodeList list = element.getElementsByTagName(subnode);
+			NodeList list = getImediateElementsByTagName(subnode);
 			XMLHelper[] results = new XMLHelper[list.getLength()]; 
 			int length = list.getLength();
 			for (int i=0; i<length; i++) {
