@@ -12,6 +12,9 @@
 	<property name="src" location="src"/>
 		<property name="template" location="${src}/template"/>
 		<property name="templatesrc" location="${template}/src"/>
+		<property name="templatetools" location="${template}/tools"/>
+		<property name="onejar" location="${templatetools}/onejar"/>
+		<property name="autoupdate" location="${templatetools}/autoupdate"/>
 		<property name="eclipse" location="${src}/eclipse"/>
 		<property name="eclipseplugin" location="${eclipse}/Plugin"/>
 		<property name="xcode" location="${src}/xcode"/>
@@ -54,6 +57,28 @@
 	</pathconvert>
 	<echo message="Sourceforge classpath set to ${sourceforge.classpath}"/>
 	<taskdef name="sfpublish" classname="org.apache.tools.ant.taskdefs.optional.sourceforge.SourceForgePublish" classpath="${sourceforge.classpath}"/>
+
+	<target name="compile.onejar" description="Compile onejar">
+		<javac srcdir="${onejar}" destdir="${onejar}"
+			source="1.4" target="1.4"
+			failonerror="true"
+			includes="**/*.java">
+		</javac>
+	</target>
+	
+	<target name="compile.autoupdate" description="Compile autoupdate">
+		<copy todir="${autoupdate}">
+			<fileset dir="${templatesrc}">
+				<include name="**/XMLHelper.java"/>
+				<include name="**/SimpleNodeList.java"/>
+			</fileset>
+		</copy>
+		<javac srcdir="${autoupdate}" destdir="${autoupdate}"
+			source="1.4" target="1.4"
+			failonerror="true"
+			includes="**/*.java">
+		</javac>
+	</target>
 
 	<target name="compile.base64" description="Compile Base64 for versions of ant below 1.7">
 		<javac srcdir="${google}" destdir="${google}"

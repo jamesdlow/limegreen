@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.*;
 import java.text.SimpleDateFormat; 
 import javax.swing.*;
+import com.jameslow.*;
 
 public class Generator extends JFrame implements WindowListener, ItemListener, ActionListener {
 	//Other
