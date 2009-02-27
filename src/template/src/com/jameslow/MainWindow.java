@@ -1,16 +1,16 @@
 package com.jameslow;
 
-import java.util.*;
 import java.awt.event.*;
-
 import javax.swing.*;
 
-public class MainWindow extends AbstractWindow {
+public class MainWindow extends AbstractWindow implements WindowListener {
 	protected Action aboutAction, exitAction, prefAction;
 	
 	public MainWindow() {
 		super();
-		addListener();
+		if (Main.OS().addQuit()) {
+			addWindowListener(this);
+		}
 		createActions();
 		setJMenuBar(createMenu());
 	}
@@ -20,24 +20,18 @@ public class MainWindow extends AbstractWindow {
 	public WindowSettings getDefaultWindowSettings() {
 		return new WindowSettings(320,160,0,0,true);
 	}
-	private void addListener() {
-		if (Main.OS().addQuit()) {
-			addWindowListener(new WindowListener() {
-				public void windowClosing(WindowEvent e) {
-					Main.quit();
-				}
-				public void windowClosed(WindowEvent e) {}
-				public void windowOpened(WindowEvent e) {}
-				public void windowIconified(WindowEvent e) {}
-				public void windowDeiconified(WindowEvent e) {}
-				public void windowActivated(WindowEvent e) {}
-				public void windowDeactivated(WindowEvent e) {}
-				public void windowGainedFocus(WindowEvent e) {}
-				public void windowLostFocus(WindowEvent e) {}
-				public void windowStateChanged(WindowEvent e) {}
-			});
-		}
+	public void windowClosing(WindowEvent e) {
+		Main.quit();
 	}
+	public void windowClosed(WindowEvent e) {}
+	public void windowOpened(WindowEvent e) {}
+	public void windowIconified(WindowEvent e) {}
+	public void windowDeiconified(WindowEvent e) {}
+	public void windowActivated(WindowEvent e) {}
+	public void windowDeactivated(WindowEvent e) {}
+	public void windowGainedFocus(WindowEvent e) {}
+	public void windowLostFocus(WindowEvent e) {}
+	public void windowStateChanged(WindowEvent e) {}
 	public void createActions() {
 		//TODO: Figure out why we have to override this
 		int shortcutKeyMask = Main.OS().shortCutKey();
