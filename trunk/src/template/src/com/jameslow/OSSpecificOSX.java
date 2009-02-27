@@ -69,14 +69,29 @@ public class OSSpecificOSX extends OSSpecific implements ApplicationListener {
 		openURL((new File(file)).toURI().toString());
 	}
 	public void openFolder(String folder) {
-		openFile(FileUtils.GetFolder(folder));
+		//This no longer works in leopard
+		//openFile(FileUtils.GetFolder(folder));
+		showFile(FileUtils.GetFolder(folder));
 		/*
 		try {
-			Runtime.getRuntime().exec("open -a \"Finder\" \"" + folder + "\"").waitFor();
+			//open only goes to file if Finder is not open at all, otherwise it just makes finder the front most window 
+			Runtime.getRuntime().exec("open -a \"Finder\" \"" + FileUtils.GetFolder(folder) + "\"").waitFor();
 		} catch (Exception e) {
 			Main.Logger().warning("Could not open folder: " + e.getMessage());
 		}
 		*/
+	}
+	public void showFile(String file) {
+		try {
+			//This doesn't seem to work at all even thought it should
+			//String cmd = "/usr/bin/osascript -e 'tell application \"Finder\"' -e 'activate' -e 'select POSIX file \""+file+"\"' -e 'end tell'";
+			//Runtime.getRuntime().exec(cmd).waitFor();
+			String[] args = { "osascript", "-e","tell application \"Finder\"","-e","activate","-e","select POSIX file \""+file+"\"","-e","end tell"};
+			Runtime.getRuntime().exec(args).waitFor();
+		} catch (Exception e) {
+			e.printStackTrace();
+			Main.Logger().warning("Could not open folder: " + e.getMessage());
+		}
 	}
 	protected File saveOpenFileDialog(Frame parent, boolean dirsonly, String title, String dir, Filefilter[] filters, boolean save) {
 		if (filters.length > 1) {

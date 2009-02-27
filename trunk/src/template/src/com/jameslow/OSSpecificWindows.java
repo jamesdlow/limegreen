@@ -43,4 +43,7 @@ public class OSSpecificWindows extends OSSpecific {
 		//TODO: Test on windows
 		openFile(FileUtils.GetFolder(folder));
 	}
+	public void showFile(String file) {
+		openFolder(FileUtils.GetFolder(file));
+	}
 }

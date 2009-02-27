@@ -120,6 +120,9 @@ public class OSSpecific {
 	public void openFolder(String folder) {
 		//TODO: Implement For Unix based OS
 	}
+	public void showFile(String file) {
+		//TODO: Implement For Unix based OS
+	}
 	public ResourceBundle getMainProps() {
 		return main;
 	}
