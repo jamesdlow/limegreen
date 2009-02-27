@@ -7,12 +7,11 @@ import java.io.*;
 
 import javax.swing.JFileChooser;
 
-import com.apple.eawt.Application;
-import com.apple.eawt.ApplicationEvent;
+import com.apple.eawt.*;
 import com.apple.eio.FileManager;
 import com.jameslow.FileUtils.Filefilter;
 
-public class OSSpecificOSX extends OSSpecific {
+public class OSSpecificOSX extends OSSpecific implements ApplicationListener {
 	private static final String LIBRARY = "Library";
 	private static final String LOGS = "Logs";
 	private static final String APPSUP = "Application Support";
@@ -41,22 +40,22 @@ public class OSSpecificOSX extends OSSpecific {
 	public void postSwing() {
 		Application fApplication = Application.getApplication();
 		fApplication.setEnabledPreferencesMenu(true);
-		fApplication.addApplicationListener(new com.apple.eawt.ApplicationAdapter() {
-			public void handleAbout(ApplicationEvent e) {
-				Main.about();
-				e.setHandled(true);
-			}
-			public void handleOpenApplication(ApplicationEvent e) {}
-			public void handleOpenFile(ApplicationEvent e) {}
-			public void handlePreferences(ApplicationEvent e) {
-				Main.preferences();
-			}
-			public void handlePrintFile(ApplicationEvent e) {}
-			public void handleQuit(ApplicationEvent e) {
-				Main.quit();
-			}
-		});
+		fApplication.addApplicationListener(this);
 	}
+	public void handleAbout(ApplicationEvent e) {
+		Main.about();
+		e.setHandled(true);
+	}
+	public void handleOpenApplication(ApplicationEvent e) {}
+	public void handleOpenFile(ApplicationEvent e) {}
+	public void handlePreferences(ApplicationEvent e) {
+		Main.preferences();
+	}
+	public void handlePrintFile(ApplicationEvent e) {}
+	public void handleQuit(ApplicationEvent e) {
+		Main.quit();
+	}
+	public void handleReOpenApplication(ApplicationEvent event) {}
 	public void openURL(String url) {
 		try {
 			FileManager.openURL(url);

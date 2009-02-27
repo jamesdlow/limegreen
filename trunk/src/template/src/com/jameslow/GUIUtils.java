@@ -12,7 +12,7 @@ public class GUIUtils {
 			popup.add(menuItem);
 		}
 		comp.add(popup);
-		MouseAdapter adaptor = new MouseAdapter() {
+		comp.addMouseListener(new MouseAdapter() {
 		    public void mousePressed(MouseEvent e) {
 		        maybeShowPopup(e);
 		    }
@@ -24,7 +24,6 @@ public class GUIUtils {
 		            popup.show(e.getComponent(), e.getX(), e.getY());
 		        }
 		    }
-		};
-		comp.addMouseListener(adaptor);
+		});
 	}
 }

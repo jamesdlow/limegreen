@@ -3,7 +3,7 @@ package com.jameslow;
 import java.util.*;
 import joptsimple.*;
 
-public class CommandLine {
+public class CommandLine extends OptionParser {
 	private OptionSet options;
 	
 	private boolean debug;
@@ -15,8 +15,14 @@ public class CommandLine {
 	private static final String QUIET = "q";
 	private static final String LOGLEVEL = "l";
 	private static final String HELP = "help";
-	
+	{
+		accepts(DEBUG, "debug");
+        accepts(QUIET, "quiet");
+        accepts(LOGLEVEL, "loglevel").withRequiredArg().describedAs( "level" ).ofType(String.class);
+        accepts(HELP, "shows this help message");
+	}
 	public CommandLine(String[] args) {
+		/*
 		OptionParser parser = new OptionParser() {
             {
                 accepts(DEBUG, "debug");
@@ -25,13 +31,13 @@ public class CommandLine {
                 accepts(HELP, "shows this help message");
             }
         };
-
-        options = parser.parse(args);
+		*/
+        options = parse(args);
         
         help = options.wasDetected(HELP);
         if (help) {
         	try {
-        		parser.printHelpOn(System.out);
+        		printHelpOn(System.out);
         	} catch (Exception e) {
         		Main.Logger().warning("System.out not avaliable");
         	}
