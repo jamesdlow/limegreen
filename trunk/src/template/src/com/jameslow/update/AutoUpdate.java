@@ -498,7 +498,6 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 				//TODO: have to assume its this, or could look up in zip below
 				launch = appname+".exe";
 			} else {
-				//TODO: Fix for windows
 				//jar:file:/Users/James/Documents/Programs/James/Eclipse/Template/build/dist/Template.jar!/main/main.jar
 				int exclaim = running.lastIndexOf("!");
 				int last;
