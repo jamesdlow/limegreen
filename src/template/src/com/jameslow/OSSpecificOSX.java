@@ -11,7 +11,7 @@ import com.apple.eawt.*;
 import com.apple.eio.FileManager;
 import com.jameslow.FileUtils.Filefilter;
 
-public class OSSpecificOSX extends OSSpecific implements ApplicationListener {
+public class OSSpecificOSX extends OSSpecific {
 	private static final String LIBRARY = "Library";
 	private static final String LOGS = "Logs";
 	private static final String APPSUP = "Application Support";
@@ -40,28 +40,29 @@ public class OSSpecificOSX extends OSSpecific implements ApplicationListener {
 	public void postSwing() {
 		Application fApplication = Application.getApplication();
 		fApplication.setEnabledPreferencesMenu(true);
-		fApplication.addApplicationListener(this);
-	}
-	public void handleAbout(ApplicationEvent e) {
-		Main.about();
-		e.setHandled(true);
-	}
-	public void handleOpenApplication(ApplicationEvent e) {}
-	public void handleOpenFile(ApplicationEvent e) {}
-	public void handlePreferences(ApplicationEvent e) {
-		Main.preferences();
-	}
-	public void handlePrintFile(ApplicationEvent e) {}
-	public void handleQuit(ApplicationEvent e) {
-		Main.quit();
-	}
-	public void handleReOpenApplication(ApplicationEvent event) {}
-	public void openURL(String url) {
-		try {
-			FileManager.openURL(url);
-		} catch (Exception e) {
-			Main.Logger().warning("Could not open url: " + e.getMessage());
-		}
+		fApplication.addApplicationListener(new ApplicationListener() {
+			public void handleAbout(ApplicationEvent e) {
+				Main.about();
+				e.setHandled(true);
+			}
+			public void handleOpenApplication(ApplicationEvent e) {}
+			public void handleOpenFile(ApplicationEvent e) {}
+			public void handlePreferences(ApplicationEvent e) {
+				Main.preferences();
+			}
+			public void handlePrintFile(ApplicationEvent e) {}
+			public void handleQuit(ApplicationEvent e) {
+				Main.quit();
+			}
+			public void handleReOpenApplication(ApplicationEvent event) {}
+			public void openURL(String url) {
+				try {
+					FileManager.openURL(url);
+				} catch (Exception e) {
+					Main.Logger().warning("Could not open url: " + e.getMessage());
+				}
+			}
+		});
 	}
 	public void openFile(String file) {
 		// open -a "Finder" ~/

@@ -15,6 +15,7 @@ import org.w3c.dom.*;
 import org.xml.sax.*;
 
 import com.apple.eio.FileManager;
+import com.jameslow.Main;
 
 //This is a big hack because I'm trying to get this into a single java class
 //For some reason I thought that would be easier to copy from the jar to a temp location to launch, and it might be, we'll see
@@ -459,12 +460,24 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 			cancelHide(couldnot + e.getMessage());
 		}
 	}
+	private String myReplace(String subject, String regex, String with) {
+		String[] split = subject.split(regex);
+		String full="";
+		for (int i=0; i<split.length; i++) {
+			if (full.compareTo("") == 0) {
+				full = split[i];
+			} else {
+				full = full + with + split[i];
+			}
+		}
+		return full;
+	}
 	private void installAndRelaunch(ActionEvent e) {
 		try {
 			final String p = " ";
 			hideWindow();
 			updatelistener.actionPerformed(e);
-			File dir = new File(tempdir + s + pack.replaceAll("\\.", s));
+			File dir = new File(tempdir + s + myReplace(pack,"\\.",s));
 			dir.mkdirs();
 			String classfile = dir.toString()+s+classname;
 			File file = new File(classfile+"."+CLASS);
@@ -476,15 +489,16 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 			String us = "/"; //URI seperator
 			if (isapp) {
 				//jar:file:/Users/James/Documents/Programs/James/Eclipse/Template/build/dist/Template.app/Contents/Resources/Java/Template.jar!/main/main.jar
-				deploy = running.substring(running.indexOf(us),apppos+".app".length());
+				deploy = new File(myReplace(running.substring(running.indexOf(us),apppos+".app".length()),"%20"," ")).getAbsolutePath();
 				launch = deploy.substring(deploy.lastIndexOf(us)+1);
 			} else if (isexe) {
 				//jar:file:/C:/Users/Janakan/AppData/Local/Temp/temp0.jar!/main/main.jar
-				//TODO: not ideal...
+				//TODO: not ideal... need to test what happens if exe is not run in the same directory
 				deploy = System.getProperty("user.dir");
 				//TODO: have to assume its this, or could look up in zip below
 				launch = appname+".exe";
 			} else {
+				//TODO: Fix for windows
 				//jar:file:/Users/James/Documents/Programs/James/Eclipse/Template/build/dist/Template.jar!/main/main.jar
 				int exclaim = running.lastIndexOf("!");
 				int last;
@@ -493,16 +507,20 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 				} else {
 					last = running.lastIndexOf(us);
 				}
-				deploy = running.substring(running.indexOf(us),last);
+				deploy = new File(myReplace(running.substring(running.indexOf(us),last),"%20"," ")).getAbsolutePath();
 				launch = running.substring(last+1, exclaim);
 			}
-			//deploy = "/Users/James/Documents/Programs/James/Eclipse/Limelight/build/dist/Limelight.app";
-			//launch = "Limelight.App";
-			Runtime.getRuntime().exec("java "+fullname+p+downloadfile.getAbsolutePath()+p+deploy+p+launch,null,new File(tempdir));
+			String[] cmd = new String[5];
+			cmd[0] = "java";
+			cmd[1] = fullname;
+			cmd[2] = downloadfile.getAbsolutePath();
+			cmd[3] = deploy;
+			cmd[4] = launch;
+			Runtime.getRuntime().exec(cmd,null,new File(tempdir));
 			//Force quit here, then updatelistener only needs to handle things like saving settings
 			System.exit(0);
 		} catch (Exception ex) {
-			cancelHide("Could not install a relaunch: " + ex.getMessage());
+			cancelHide("Could not install or relaunch: " + ex.getMessage());
 		}
 	}
 	private void getHttpContent(String url, OutputStream out) throws IOException {
@@ -595,19 +613,22 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 		try {
 			if (application.endsWith(".jar")) {
 				if (isosx) {
-					System.out.println(path+s+application);
-					Runtime.getRuntime().exec("open "+path+s+application).waitFor();
+					String[] cmd = {"open",path+s+application};
+					Runtime.getRuntime().exec(cmd).waitFor();
 				} else {
-					Runtime.getRuntime().exec("java "+path+s+application).waitFor();
+					String[] cmd = {"java","-jar",path+s+application};
+					Runtime.getRuntime().exec(cmd).waitFor();
 				}
 			} else {
 				if (isosx) {
-					System.out.println(path);
-					Runtime.getRuntime().exec("open -a "+path).waitFor();
+					String[] cmd = {"open","-a",path};
+					Runtime.getRuntime().exec(cmd).waitFor();
 				} else if (iswindows) {
-					Runtime.getRuntime().exec(path+s+application).waitFor();
+					String[] cmd = {path+s+application};
+					Runtime.getRuntime().exec(cmd).waitFor();
 				} else {
-					Runtime.getRuntime().exec("java "+path+s+application).waitFor();
+					String[] cmd = {"java","-jar",path+s+application};
+					Runtime.getRuntime().exec(cmd).waitFor();
 				}
 			}
 			return true;
