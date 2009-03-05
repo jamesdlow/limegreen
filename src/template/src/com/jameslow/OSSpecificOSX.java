@@ -55,14 +55,14 @@ public class OSSpecificOSX extends OSSpecific {
 				Main.quit();
 			}
 			public void handleReOpenApplication(ApplicationEvent event) {}
-			public void openURL(String url) {
-				try {
-					FileManager.openURL(url);
-				} catch (Exception e) {
-					Main.Logger().warning("Could not open url: " + e.getMessage());
-				}
-			}
 		});
+	}
+	public void openURL(String url) {
+		try {
+			FileManager.openURL(url);
+		} catch (Exception e) {
+			Main.Logger().warning("Could not open url: " + e.getMessage());
+		}
 	}
 	public void openFile(String file) {
 		// open -a "Finder" ~/
