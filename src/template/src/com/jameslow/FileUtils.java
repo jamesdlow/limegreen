@@ -81,6 +81,13 @@ public class FileUtils {
 			}
 		};
 	}
+	public static String getFilename(String filepath) {
+		return filepath.substring(filepath.lastIndexOf(Main.OS().fileSeparator())+1,filepath.length());
+	}
+	public static String stripExt(String filepath) {
+		String filename = getFilename(filepath);
+		return filename.substring(0,filename.lastIndexOf("."));
+	}
 	public static String getExt(String filename) {
 		int pos = filename.lastIndexOf(".");
 		if (pos >= 0 && pos < filename.length()) {
