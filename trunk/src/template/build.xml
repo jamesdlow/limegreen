@@ -184,6 +184,7 @@
 		<replace file="${jsmooth.outfile}" token="@exefile@" value="${name}.exe"/>
 		<replace file="${jsmooth.outfile}" token="@jarfile@" value="${name}.jar"/>
 		<replace file="${jsmooth.outfile}" token="@mainclass@" value="${mainclass}"/>
+		<replace file="${jsmooth.outfile}" token="@exewrapper@" value="${build.exewrapper}"/>
 	</target>
 	
 	<target name="compile" depends="prepare" description="Compile code">

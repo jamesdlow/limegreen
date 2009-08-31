@@ -2,6 +2,7 @@ package com.jameslow;
 
 import java.io.*;
 import javax.swing.*;
+import javax.swing.filechooser.*;
 
 public class OSSpecificWindows extends OSSpecific {
 
@@ -13,6 +14,11 @@ public class OSSpecificWindows extends OSSpecific {
 		//windows nt - \Windows\Profiles
 		//windows 2000/2003/XP/Vista - \Documents and Settings\
 		settingsdir = System.getenv("APPDATA") + fileSeparator() + appName();
+	}
+	public void setDocumentsDir() {
+		JFileChooser fr = new JFileChooser();
+		FileSystemView fw = fr.getFileSystemView();
+		docsdir = fw.getDefaultDirectory().getAbsolutePath();
 	}
 	public void preSwing() {
 		//shortcutkey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
