@@ -6,6 +6,7 @@
 	<property file="${secret}"/>
 	<!-- Preexisitng Directories -->
 	<property name="tools" location="tools"/>
+		<property name="antlib" location="${tools}/antlib"/>
 		<property name="google" location="${tools}/google"/>
 		<property name="sourceforge" location="${tools}/sourceforge"/>
 		<property name="sflib" location="${sourceforge}/lib"/>
@@ -44,7 +45,19 @@
 	</condition>
 	<echo message="Google classpath set to ${google.classpath}"/>
 	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="${google.classpath}" name="gcupload"/>
-	
+
+	<fileset id="antlib.jars" dir="${antlib}">
+		<include name="**/*.jar"/>
+	</fileset>
+	<path id="antlib.id">
+		<fileset refid="antlib.jars"/>
+	</path>
+	<pathconvert property="antlib.classpath" pathsep=";">
+		<path refid="antlib.id"/>
+	</pathconvert>
+	<taskdef classname="org.apache.tools.ant.taskdefs.optional.ssh.Scp" classpath="${antlib.classpath}" name="scp"/>
+	<taskdef classname="com.jameslow.Substring" classpath="${antlib}" name="substring"/>
+
 	<fileset id="sourceforge.jars" dir="${sflib}">
 		<include name="**/*.jar"/>
 	</fileset>
@@ -82,6 +95,14 @@
 
 	<target name="compile.base64" description="Compile Base64 for versions of ant below 1.7">
 		<javac srcdir="${google}" destdir="${google}"
+			source="1.4" target="1.4"
+			failonerror="true"
+			includes="**/*.java">
+		</javac>
+	</target>
+	
+	<target name="compile.utils" description="Compile additional ant utils">
+		<javac srcdir="${antlib}" destdir="${antlib}"
 			source="1.4" target="1.4"
 			failonerror="true"
 			includes="**/*.java">
@@ -227,6 +248,13 @@
 				filetype="source_zip"
 				processortype="platform_independent"/>
 		</sfpublish>
+<!--	This doesn't work right now because it can't create the directories first
+		<substring startindex="0" endindex="1" string="${sourceforge.project}" property="oneletter"/>
+		<substring startindex="0" endindex="2" string="${sourceforge.project}" property="twoletters"/>
+		<scp file="${source.zip.full}" todir="${sourceforge.username},${sourceforge.project}@frs.sourceforge.net:/home/frs/project/${oneletter}/${twoletters}/${sourceforge.project}/${sourceforge.project}/${new.version}/${source.zip}" trust="yes" verbose="true" password="${sourceforge.password}" />
+		<scp file="${xcode.zip.full}" todir="${sourceforge.username},${sourceforge.project}@frs.sourceforge.net:/home/frs/project/${oneletter}/${twoletters}/${sourceforge.project}/${sourceforge.project}/${new.version}/${xcode.zip}" trust="yes" verbose="true" password="${sourceforge.password}" />
+		<scp file="${ant.zip.full}" todir="${sourceforge.username},${sourceforge.project}@frs.sourceforge.net:/home/frs/project/${oneletter}/${twoletters}/${sourceforge.project}/${sourceforge.project}/${new.version}/${ant.zip}" trust="yes" verbose="true" password="${sourceforge.password}" />
+-->
 	</target>
 
 	<target name="google" description="Deploy All To GoogleCode" depends="release">

@@ -6,6 +6,7 @@ import java.awt.Frame;
 import java.io.*;
 
 import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileSystemView;
 
 import com.apple.eawt.*;
 import com.apple.eio.FileManager;
@@ -27,6 +28,10 @@ public class OSSpecificOSX extends OSSpecific {
 	public void setLogDir() {
 		String s = fileSeparator();
 		logdir = homeDir() + s + LIBRARY + s + LOGS + s + appName();
+	}
+	public void setDocumentsDir() {
+		String s = fileSeparator();
+		docsdir = homeDir()+s+"Documents";
 	}
 	public void preSwing() {
 		try {

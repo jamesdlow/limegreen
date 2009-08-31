@@ -82,11 +82,13 @@ public class FileUtils {
 		};
 	}
 	public static String getFilename(String filepath) {
-		return filepath.substring(filepath.lastIndexOf(Main.OS().fileSeparator())+1,filepath.length());
+		int pos = filepath.lastIndexOf(Main.OS().fileSeparator());
+		return (pos >= 0 ? filepath.substring(pos+1,filepath.length()) : filepath);
 	}
 	public static String stripExt(String filepath) {
 		String filename = getFilename(filepath);
-		return filename.substring(0,filename.lastIndexOf("."));
+		int pos = filename.lastIndexOf(".");
+		return (pos >= 0 ? filename.substring(0,pos) : filepath) ;
 	}
 	public static String getExt(String filename) {
 		int pos = filename.lastIndexOf(".");

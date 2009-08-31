@@ -6,6 +6,7 @@ import java.util.*;
 
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
+import javax.swing.filechooser.FileSystemView;
 
 import com.jameslow.FileUtils.Filefilter;
 
@@ -36,6 +37,7 @@ public class OSSpecific {
 	protected String settingsdir;
 	protected String logdir;
 	protected String tempdir;
+	protected String docsdir;
 	
 	protected OSSpecific() {
 		homedir = properties.getProperty("user.home");
@@ -46,6 +48,7 @@ public class OSSpecific {
 		setSettingsDir();
 		setLogDir();
 		setTempDir();
+		setDocumentsDir();
 		this.preSwing();
 			shortcutkey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 			setFont();
@@ -95,6 +98,9 @@ public class OSSpecific {
 	}
 	public void setTempDir() {
 		tempdir = System.getProperty("java.io.tmpdir");
+	}
+	public void setDocumentsDir() {
+		docsdir = homeDir();
 	}
 	
 	//Helper Functions
@@ -206,6 +212,9 @@ public class OSSpecific {
 	}
 	public String tempDir() {
 		return tempdir;
+	}
+	public String documentsDir() {
+		return docsdir;
 	}
 	public boolean addQuit() {
 		return true;

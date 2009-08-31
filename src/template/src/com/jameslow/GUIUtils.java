@@ -1,7 +1,13 @@
 package com.jameslow;
 
+import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.*;
+import java.io.*;
 import java.util.*;
+import java.util.List;
+
+import javax.imageio.*;
 import javax.swing.*;
 
 public class GUIUtils {
@@ -25,5 +31,13 @@ public class GUIUtils {
 		        }
 		    }
 		});
+	}
+	public static void componentToImage(JComponent comp, String filename) throws IOException {
+		int w = comp.getWidth(), h = comp.getHeight();
+		BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g2 = image.createGraphics();
+		comp.paint(g2);
+		g2.dispose();
+		ImageIO.write(image, "jpeg", new File(filename));
 	}
 }

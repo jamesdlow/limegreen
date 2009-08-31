@@ -41,7 +41,7 @@
 	<maximumMemoryHeap>67108864</maximumMemoryHeap>
 	<maximumVersion></maximumVersion>
 	<minimumVersion>1.4</minimumVersion>
-	<skeletonName>Windowed Wrapper</skeletonName>
+	<skeletonName>@exewrapper@</skeletonName>
 	<skeletonProperties>
 		<key>Message</key>
 		<value>Java has not been found on your computer.
