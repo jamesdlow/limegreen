@@ -222,4 +222,7 @@ public class OSSpecific {
 	public boolean addIcon() {
 		return true;
 	}
+	public boolean settingsImmediate() {
+		return false;
+	}
 }
