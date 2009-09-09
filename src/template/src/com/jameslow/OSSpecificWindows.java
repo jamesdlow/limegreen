@@ -42,11 +42,9 @@ public class OSSpecificWindows extends OSSpecific {
 			Main.Logger().warning("Could not open file: " + e.getMessage());
 		}
 		*/
-		//TODO: Test on windows
 		openURL((new File(file)).toURI().toString());
 	}
 	public void openFolder(String folder) {
-		//TODO: Test on windows
 		openFile(FileUtils.GetFolder(folder));
 	}
 	public void showFile(String file) {
