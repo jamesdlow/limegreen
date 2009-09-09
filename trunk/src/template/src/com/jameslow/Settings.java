@@ -162,7 +162,7 @@ public class Settings {
 			try {
 				loglevel = Level.parse(getProperty("log.level","WARNING"));
 			} catch (Exception e) {
-				//TODO: Something very basic has gone wrong, log everything
+				//Something very basic has gone wrong, log everything
 				Main.Logger().severe("Log level in properties file not recognised.");
 				loglevel = Level.ALL;
 			}
