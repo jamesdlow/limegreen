@@ -133,4 +133,7 @@ public class OSSpecificOSX extends OSSpecific {
 	public boolean addIcon() {
 		return false;
 	}
+	public boolean settingsImmediate() {
+		return true;
+	}
 }

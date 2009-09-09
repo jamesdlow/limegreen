@@ -14,11 +14,6 @@ import com.jameslow.update.AutoUpdate;
 
 /**
  * Standard way of doing settings
- * TODO: Decide if we have standard way to set settings, so on OSX they're immediate, and on windows it takes affect when you click ok.
- * TODO: Also make sure we don't save until we click ok or apply setting like OSX 
- * TODO: Also an event to say that a certain setting has changes, incase we need to apply it, store up on Windows, immediate OS X?
- * TODO: Also a flag to say a setting has changed that won't apply until you restart
- * TODO: Settings list interface
  * @author James
  */
 public class Settings {

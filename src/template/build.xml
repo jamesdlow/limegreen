@@ -55,7 +55,19 @@
 		<fileset refid="ant.jars"/>
 	</path>
 	<taskdef name="ftp" classname="org.apache.tools.ant.taskdefs.optional.net.FTP" classpathref="ant.path"/>
-	
+
+	<fileset id="antlib.jars" dir="${antlib}">
+		<include name="**/*.jar"/>
+	</fileset>
+	<path id="antlib.id">
+		<fileset refid="antlib.jars"/>
+	</path>
+	<pathconvert property="antlib.classpath" pathsep=";">
+		<path refid="antlib.id"/>
+	</pathconvert>
+	<taskdef classname="org.apache.tools.ant.taskdefs.optional.ssh.Scp" classpath="${antlib.classpath}" name="scp"/>
+	<taskdef classname="com.jameslow.Substring" classpath="${antlib}" name="substring"/>
+
 	<condition property="onejar.do">
 		<istrue value="${onejar.use}"/>
 	</condition>
@@ -129,6 +141,7 @@
 	<path id="lib.path">
 		<fileset refid="lib.jars"/>
 		<pathelement path="${applejava}/AppleJavaExtensions.jar"/>
+		<pathelement path="${jsmooth}/jnismooth.jar"/>
 	</path>
 	
 	<target name="compile.onejar" description="Compile onejar">
@@ -141,6 +154,22 @@
 	
 	<target name="compile.autoupdate" description="Compile autoupdate">
 		<javac srcdir="${autoupdate}" destdir="${autoupdate}"
+			source="1.4" target="1.4"
+			failonerror="true"
+			includes="**/*.java">
+		</javac>
+	</target>
+	
+	<target name="compile.base64" description="Compile Base64 for versions of ant below 1.7">
+		<javac srcdir="${google}" destdir="${google}"
+			source="1.4" target="1.4"
+			failonerror="true"
+			includes="**/*.java">
+		</javac>
+	</target>
+	
+	<target name="compile.utils" description="Compile additional ant utils">
+		<javac srcdir="${antlib}" destdir="${antlib}"
 			source="1.4" target="1.4"
 			failonerror="true"
 			includes="**/*.java">
