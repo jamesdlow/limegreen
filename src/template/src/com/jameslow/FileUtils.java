@@ -1,11 +1,7 @@
 package com.jameslow;
 
-import java.awt.event.ActionEvent;
 import java.io.*;
 import java.net.MalformedURLException;
-
-import javax.swing.AbstractAction;
-import javax.swing.JFrame;
 
 public class FileUtils {
 	public static FilenameFilter getHiddenDirFilter() {

@@ -22,6 +22,7 @@ public class Settings {
 	
 	private String aboutimage;
 	private String abouttext;
+	private String abouttextmore;
 	private String abouturl;
 	private int buildnumber;
 	private String builddate;
@@ -97,6 +98,9 @@ public class Settings {
 	public String getAboutText() {
 		return abouttext;
 	}
+	public String getAboutTextMore() {
+		return abouttextmore;
+	}
 	public String getAboutImage() {
 		return aboutimage;
 	}
@@ -140,6 +144,7 @@ public class Settings {
 			//version = readManifest("Build-Version");
 			
 			abouttext = getProperty("about.text",title);
+			abouttextmore = getProperty("about.text.more","");
 			aboutimage = getProperty("about.image");
 			abouturl = getProperty("about.url","");
 			logtofile = getBooleanProperty("log.tofile");
@@ -254,6 +259,35 @@ public class Settings {
 			}
 		}
 		return manifest;
+	}
+	public boolean writeNativeLib(String resource) {
+		try {
+			File dir = new File(os.nativeLibDir());
+			dir.mkdirs();
+			InputStream in = getResourceAsStream(resource);
+			File file = new File(os.nativeLibDir() + os.fileSeparator() + FileUtils.getFilename(resource));
+			OutputStream out = new FileOutputStream(file);
+			FileUtils.WriteStream(in, out);
+			try {
+				out.close();
+				String[] args = { "chmod", "744",file.getAbsolutePath()};
+				Process p = Runtime.getRuntime().exec(args);
+				/*
+				StringBuffer buf = new StringBuffer();
+				InputStream e = p.getErrorStream();
+				int c;
+				while ((c = e.read()) != -1) {
+				    buf.append((char) c);
+				}
+				int exitVal = p.waitFor();*/   
+			} catch (Exception e) {
+				//Only works on Unix like systems
+			}
+			return true;
+		} catch (FileNotFoundException e) {
+			Main.Logger().warning("Cannot copy native library: " + e.getMessage());
+		}
+		return false;
 	}
 	public void saveSettings() {
 		preSaveSettings();
