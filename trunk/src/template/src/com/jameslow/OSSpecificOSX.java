@@ -93,7 +93,8 @@ public class OSSpecificOSX extends OSSpecific {
 			//String cmd = "/usr/bin/osascript -e 'tell application \"Finder\"' -e 'activate' -e 'select POSIX file \""+file+"\"' -e 'end tell'";
 			//Runtime.getRuntime().exec(cmd).waitFor();
 			String[] args = { "osascript", "-e","tell application \"Finder\"","-e","activate","-e","select POSIX file \""+file+"\"","-e","end tell"};
-			Runtime.getRuntime().exec(args).waitFor();
+			executeProcess(args);
+			//Runtime.getRuntime().exec(args).waitFor();
 		} catch (Exception e) {
 			e.printStackTrace();
 			Main.Logger().warning("Could not open folder: " + e.getMessage());

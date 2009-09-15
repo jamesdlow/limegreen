@@ -199,6 +199,102 @@ public class OSSpecific {
 		return saveOpenFileDialog(parent,false,title,dir,filters,true);
 	}
 	
+	//Some process commands
+	public boolean killProcess(String name) {
+		String[] args = {"ps","-ef"};
+		String result = executeProcess(args);
+		BufferedReader reader = new BufferedReader(new StringReader(result));
+		String line;
+		try {
+			while ((line = reader.readLine()) != null) {
+				if (line.indexOf(name) >= 0) {
+					int i = 0;
+					while (i < line.length() && line.substring(i, i+1).trim().length() == 0) {
+						i++;
+					}
+					while (i < line.length() && line.substring(i, i+1).trim().length() != 0) {
+						i++;
+					}
+					while (i < line.length() && line.substring(i, i+1).trim().length() == 0) {
+						i++;
+					}
+					int pid = Integer.parseInt(line.substring(i,line.indexOf(" ",i)).trim());
+					killProcess(pid);
+				}
+			}
+			return true;
+		} catch (Exception e) {
+			Main.Logger().warning("Could not kill process: "+e.getMessage());
+		}
+		return false;
+	}
+	public boolean killProcess(int pid) {
+		String[] args = new String[3];
+		args[0] = "kill";
+		args[1] = "-9";
+		args[2] = ""+pid;
+		executeProcess(args);
+		return true;
+	}
+	public String executeProcess(String[] args) {
+		return executeProcess(args,0);
+	}
+	public String executeProcess(String[] args, int expectedreturn) {
+		try {
+			Process p = Runtime.getRuntime().exec(args);
+			StringBuffer bufe = new StringBuffer();
+			StringBuffer bufi = new StringBuffer();
+			InputStream e = p.getErrorStream();
+			InputStream i = p.getInputStream();
+			int c;
+			while ((c = e.read()) != -1) {
+			    bufe.append((char) c);
+			}
+			while ((c = i.read()) != -1) {
+			    bufi.append((char) c);
+			}
+			int exitVal = p.waitFor();
+			if (bufe.length() > 0) {
+				Main.Logger().warning(bufe.toString());
+			}
+			if (bufi.length() > 0) {
+				Main.Logger().info(bufi.toString());
+			}
+			if (exitVal == expectedreturn) {
+				return bufi.toString();
+			} else {
+				return bufe.toString();
+			}
+		} catch (Exception e) {
+			Main.Logger().warning("Error executing process: "+e.getMessage());
+		}
+		return null;
+	}
+	public String getNativeLibFile(String resource) {
+		return nativeLibDir() + fileSeparator() + FileUtils.getFilename(resource);
+	}
+	public boolean writeNativeLib(String resource) {
+		try {
+			File dir = new File(nativeLibDir());
+			dir.mkdirs();
+			InputStream in = Main.Settings().getResourceAsStream(resource);
+			File file = new File(getNativeLibFile(resource));
+			OutputStream out = new FileOutputStream(file);
+			FileUtils.WriteStream(in, out);
+			try {
+				out.close();
+				String[] args = { "chmod", "744",file.getAbsolutePath()};
+				String result = executeProcess(args);
+				return result.length() == 0;
+			} catch (Exception e) {
+				//Only works on Unix like systems
+			}
+		} catch (FileNotFoundException e) {
+			Main.Logger().warning("Cannot copy native library: " + e.getMessage());
+		}
+		return false;
+	}
+	
 	//Constants
 	public String appName() {
 		return appname;
