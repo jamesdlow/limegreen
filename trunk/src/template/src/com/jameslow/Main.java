@@ -165,15 +165,19 @@ public class Main {
 			};
 			ActionListener cancel = new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					logger.warning(e.getActionCommand());
-					saveUpdateSettings();
-					if (!cmd.getQuiet()) {
-						if (window_name == null) {
-							window = new MainWindow();
-						} else {
-							window = (AbstractWindow) newInstance(window_name);
+					try {
+						saveUpdateSettings();
+						if (!cmd.getQuiet()) {
+							if (window_name == null) {
+								window = new MainWindow();
+							} else {
+								window = (AbstractWindow) newInstance(window_name);
+							}
+							window.setVisible(window.getWindowSettings().getVisible());
 						}
-						window.setVisible(window.getWindowSettings().getVisible());
+					} catch (Exception ex) {
+						ex.printStackTrace();
+						logger.severe("Could not start application: "+ex.getMessage());
 					}
 				}
 			};

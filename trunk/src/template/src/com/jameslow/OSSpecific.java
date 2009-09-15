@@ -26,6 +26,7 @@ public class OSSpecific {
 	protected static final ResourceBundle build = ResourceBundle.getBundle(BUILD_BUNDLE, Locale.getDefault());
 	protected static final ResourceBundle main = ResourceBundle.getBundle(MAIN_BUNDLE, Locale.getDefault());
 	protected static final Properties properties = System.getProperties();
+	protected static final String osname = properties.getProperty("os.name").toLowerCase(); 
 	
 	//Constants
 	protected String homedir;
@@ -38,6 +39,7 @@ public class OSSpecific {
 	protected String logdir;
 	protected String tempdir;
 	protected String docsdir;
+	protected String libdir;
 	
 	protected OSSpecific() {
 		homedir = properties.getProperty("user.home");
@@ -46,6 +48,7 @@ public class OSSpecific {
 		pathseparator = properties.getProperty("path.separator");
 		appname = build.getString("application.name");
 		setSettingsDir();
+		setNativeLibDir();
 		setLogDir();
 		setTempDir();
 		setDocumentsDir();
@@ -67,14 +70,22 @@ public class OSSpecific {
 	}
 	//Statics
 	public static OSSpecific getInstance() {
-		String osname = properties.getProperty("os.name").toLowerCase();
-		if (osname.startsWith("mac os x")) {
+		if (isOSX()) {
 			return new OSSpecificOSX();
-		} else if (osname.startsWith("windows")) {
+		} else if (isWindows()) {
 			return new OSSpecificWindows();
 		} else {
 			return new OSSpecific();
 		}
+	}
+	public static boolean isOSX() {
+		return osname.startsWith("mac os x"); 
+	}
+	public static boolean isWindows() {
+		return osname.startsWith("windows"); 
+	}
+	public static boolean isOther() {
+		return !isOSX() && !isWindows();
 	}
 	
 	//Callbacks
@@ -92,6 +103,9 @@ public class OSSpecific {
 	}
 	public void setSettingsDir() {
 		settingsdir = homeDir() + fileSeparator() + "." + appName();
+	}
+	public void setNativeLibDir() {
+		libdir = settingsDir() + fileSeparator() + "lib";
 	}
 	public void setLogDir() {
 		logdir = settingsdir;
@@ -215,6 +229,9 @@ public class OSSpecific {
 	}
 	public String documentsDir() {
 		return docsdir;
+	}
+	public String nativeLibDir() {
+		return libdir;
 	}
 	public boolean addQuit() {
 		return true;
