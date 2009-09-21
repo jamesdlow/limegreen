@@ -37,8 +37,8 @@
 	</condition>
 
 	<condition property="google.classpath"
-		value="${google};${google}/ant-googlecode-0.0.1.jar"
-		else="${google}/ant-googlecode-0.0.1.jar">
+		value="${google};${google}/ant-googlecode-0.0.2.jar"
+		else="${google}/ant-googlecode-0.0.2.jar">
 		<not>
 			<available classname="org.apache.tools.ant.util.Base64Converter"/>
 		</not>
@@ -55,7 +55,7 @@
 	<pathconvert property="antlib.classpath" pathsep=";">
 		<path refid="antlib.id"/>
 	</pathconvert>
-	<taskdef classname="org.apache.tools.ant.taskdefs.optional.ssh.Scp" classpath="${antlib.classpath}" name="scp"/>
+	<!-- <taskdef classname="org.apache.tools.ant.taskdefs.optional.ssh.Scp" classpath="${antlib.classpath}" name="scp"/> -->
 	<taskdef classname="com.jameslow.Substring" classpath="${antlib}" name="substring"/>
 
 	<fileset id="sourceforge.jars" dir="${sflib}">
@@ -265,7 +265,7 @@
 			filename="${source.zip.full}"
 			targetfilename="${source.zip}"
 			summary="Limegreen Raw Source Code"
-			labels="OpSys-OSX, Type-Source, Limegreen, Source"/>
+			labels="Type-Source, Limegreen, Source"/>
 		<gcupload
 			username="${google.username}"
 			password="${google.password}"
