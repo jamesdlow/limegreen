@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Template" default="build" basedir=".">
+<project name="Limegreen" default="build" basedir=".">
 	<property name="props" value="build.properties"/>
 	<property name="secret" value="secret.properties"/>
 	<property file="${props}"/>
@@ -34,19 +34,30 @@
 			<property name="jar.lib" location="${jar}/lib"/>
 			<property name="jarfile.main" location="${jar.main}/main.jar"/>
 		<property name="app" location="${build}/app"/>
+			<property name="new.stub" location="${app}/${name}"/>
 		<property name="exe" location="${build}/exe"/>
 	
-	<taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler"  classpath="${jarbundler}/jarbundler-1.9.jar"/>
-	<taskdef name="jsmoothgen" classname="net.charabia.jsmoothgen.ant.JSmoothGen" classpath="${jsmooth}/jsmoothgen-ant.jar"/>
-	<condition property="google.classpath"
-		value="${google};${google}/ant-googlecode-0.0.2.jar"
-		else="${google}/ant-googlecode-0.0.2.jar">
-		<not>
-			<available classname="org.apache.tools.ant.util.Base64Converter"/>
-		</not>
-	</condition>
-	<echo message="Google classpath set to ${google.classpath}"/>
-	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="${google.classpath}" name="gcupload"/>
+	<fileset id="jar.jars" dir="${jarbundler}">
+		<include name="**/*.jar"/>
+	</fileset>
+	<path id="jar.path">
+		<fileset refid="jar.jars"/>
+	</path>
+	<taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler" classpathref="jar.path"/>
+	<fileset id="jsmooth.jars" dir="${jsmooth}">
+		<include name="**/*.jar"/>
+	</fileset>
+	<path id="jsmooth.path">
+		<fileset refid="jsmooth.jars"/>
+	</path>
+	<taskdef name="jsmoothgen" classname="net.charabia.jsmoothgen.ant.JSmoothGen" classpathref="jsmooth.path"/>
+	<fileset id="google.jars" dir="${google}">
+		<include name="**/*.jar"/>
+	</fileset>
+	<path id="google.path">
+		<fileset refid="google.jars"/>
+	</path>
+	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpathref="google.path" name="gcupload"/>
 	<taskdef classname="com.jameslow.update.Generator" classpath="${autoupdate}" name="autoupdate"/>
 	<fileset id="ant.jars" dir="${antlib}">
 		<include name="**/*.jar"/>
@@ -160,14 +171,6 @@
 		</javac>
 	</target>
 	
-	<target name="compile.base64" description="Compile Base64 for versions of ant below 1.7">
-		<javac srcdir="${google}" destdir="${google}"
-			source="1.4" target="1.4"
-			failonerror="true"
-			includes="**/*.java">
-		</javac>
-	</target>
-	
 	<target name="compile.utils" description="Compile additional ant utils">
 		<javac srcdir="${antlib}" destdir="${antlib}"
 			source="1.4" target="1.4"
@@ -274,19 +277,10 @@
 	<target name="exe.run" depends="exe">
 		<exec dir="${dist}" executable="${dist}/${name}.exe"/>
 	</target>
-	<target name="app.mac" depends="jar" if="is.mac">
-		<jarbundler
-			name="${name}"
-			shortname="${name}"
-			icon="${application.osx.icon}"
-			jvmversion="${build.jvm}+"
-			build="${build.number}"
-			version="${build.version}"
-			dir="${dist}"
-			mainclass="${mainclass}"
-			jar="${jarfile}"/>
-	</target>
 	<target name="app.other" depends="jar" if="not.mac">
+		<copy file="${jarbundler}/JavaApplicationStub" tofile="${new.stub}"/>
+	</target>
+	<target name="app" depends="app.other" description="Build app">
 		<jarbundler
 			name="${name}"
 			shortname="${name}"
@@ -297,9 +291,7 @@
 			dir="${dist}"
 			mainclass="${mainclass}"
 			jar="${jarfile}"
-			stubfile="${jarbundler}/JavaApplicationStub"/>
-	</target>
-	<target name="app" depends="app.mac,app.other" description="Build app">
+			stubfile="${new.stub}"/>
 	</target>
 	<target name="app.run" depends="app" if="is.mac">
 		<exec dir="${dist}" executable="open">
@@ -320,7 +312,7 @@
 			basedir="${dist}"
 			includes="${name}.app/**">
 			<zipfileset dir="${dist}/${name}.app/Contents/MacOS" filemode="755" prefix="${name}.app/Contents/MacOS">
-				<include name="JavaApplicationStub"/>
+				<include name="${name}"/>
 			</zipfileset>
 		</zip>
 	</target>
