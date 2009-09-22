@@ -36,15 +36,13 @@
 		<isfalse value="${build.doversion}"/>
 	</condition>
 
-	<condition property="google.classpath"
-		value="${google};${google}/ant-googlecode-0.0.2.jar"
-		else="${google}/ant-googlecode-0.0.2.jar">
-		<not>
-			<available classname="org.apache.tools.ant.util.Base64Converter"/>
-		</not>
-	</condition>
-	<echo message="Google classpath set to ${google.classpath}"/>
-	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="${google.classpath}" name="gcupload"/>
+	<fileset id="google.jars" dir="${google}">
+		<include name="**/*.jar"/>
+	</fileset>
+	<path id="google.path">
+		<fileset refid="google.jars"/>
+	</path>
+	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpathref="google.path" name="gcupload"/>
 
 	<fileset id="antlib.jars" dir="${antlib}">
 		<include name="**/*.jar"/>
@@ -87,14 +85,6 @@
 			</fileset>
 		</copy>
 		<javac srcdir="${autoupdate}" destdir="${autoupdate}"
-			source="1.4" target="1.4"
-			failonerror="true"
-			includes="**/*.java">
-		</javac>
-	</target>
-
-	<target name="compile.base64" description="Compile Base64 for versions of ant below 1.7">
-		<javac srcdir="${google}" destdir="${google}"
 			source="1.4" target="1.4"
 			failonerror="true"
 			includes="**/*.java">
