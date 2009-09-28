@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.KeyStroke;
 
 public abstract class AbstractWindow extends JFrame {
 	public AbstractWindow() {
@@ -16,6 +17,7 @@ public abstract class AbstractWindow extends JFrame {
 				setIconImage(image.getImage());
 			}
 		}
+		Main.addWindow(this);
 	}
 	public abstract String getDefaultTitle();
 	public abstract WindowSettings getDefaultWindowSettings();
@@ -31,14 +33,12 @@ public abstract class AbstractWindow extends JFrame {
 	public void setSettingBounds() {
 		setBounds(getWindowSettings());
 	}
-	public class closeActionClass extends AbstractAction {
-		private JFrame window;
-		public closeActionClass(String text, JFrame window) {
-			super(text);
-			this.window = window;
-		}
-		public void actionPerformed(ActionEvent e) {
-			window.setVisible(false);
-		}
+	public boolean getJustHide() {
+		//Can override this if your window contains a document that you want to close on OSX 
+		//Or if you want to minimize an application to the system tray on Windows/Unix
+		return !Main.OS().addQuit();
+	}
+	public boolean onClose() {
+		return true;
 	}
 }

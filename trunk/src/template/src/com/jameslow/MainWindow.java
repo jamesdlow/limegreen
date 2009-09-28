@@ -4,7 +4,7 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class MainWindow extends AbstractWindow implements WindowListener {
-	protected Action aboutAction, exitAction, prefAction;
+	protected Action aboutAction, exitAction, prefAction, closeAction;
 	
 	public MainWindow() {
 		super();
@@ -33,37 +33,55 @@ public class MainWindow extends AbstractWindow implements WindowListener {
 	public void windowLostFocus(WindowEvent e) {}
 	public void windowStateChanged(WindowEvent e) {}
 	public void createActions() {
-		//TODO: Figure out why we have to override this
 		int shortcutKeyMask = Main.OS().shortCutKey();
 		if (Main.OS().addQuit()) {
 			aboutAction = new aboutActionClass("About", KeyStroke.getKeyStroke(KeyEvent.VK_B, shortcutKeyMask));
 			exitAction = new exitActionClass("Exit", KeyStroke.getKeyStroke(KeyEvent.VK_X, shortcutKeyMask));
 			prefAction = new exitActionClass("Options", KeyStroke.getKeyStroke(KeyEvent.VK_O, shortcutKeyMask));
 		}
+		closeAction = new closeActionClass("Close",KeyStroke.getKeyStroke(KeyEvent.VK_W, shortcutKeyMask));
+		createOtherActions();
 	}
+	public void createOtherActions() {}
+	public void createFileMenu(JMenu fileMenu) {}
+	public void createEditMenu(JMenu editMenu) {}
+	public void createViewMenu(JMenu viewMenu) {}
+	public void createHelpMenu(JMenu helpMenu) {}
+	public void createOtherMenus(JMenuBar mainMenuBar) {}
 	public JMenuBar createMenu() {
 		JMenuBar mainMenuBar = new JMenuBar();
 		JMenu fileMenu = new JMenu("File");
+			createFileMenu(fileMenu);
+			if (fileMenu.getItemCount() >= 1) {
+				fileMenu.addSeparator();
+			}
+			fileMenu.add(new JMenuItem(closeAction));
 			if (Main.OS().addQuit()) {
 				fileMenu.add(new JMenuItem(exitAction));	
 			}
-		if (fileMenu.getItemCount() >= 1) {
 			mainMenuBar.add(fileMenu);
-		}
+		JMenu editMenu = new JMenu("Edit");
+			createEditMenu(editMenu);
+			if (editMenu.getItemCount() >= 1) {
+				mainMenuBar.add(editMenu);
+			}
 		JMenu viewMenu = new JMenu("View");
-		if (Main.OS().addQuit()) {
-			viewMenu.add(new JMenuItem(prefAction));	
-		}
-		if (viewMenu.getItemCount() >= 1) {
-			mainMenuBar.add(viewMenu);
-		}
+			createViewMenu(viewMenu);
+			if (Main.OS().addQuit()) {
+				if (viewMenu.getItemCount() >= 1) {
+					viewMenu.addSeparator();
+				}
+				viewMenu.add(new JMenuItem(prefAction));	
+			}
+			if (viewMenu.getItemCount() >= 1) {
+				mainMenuBar.add(viewMenu);
+			}
+		createOtherMenus(mainMenuBar);
 		JMenu helpMenu = new JMenu("Help");
-		if (Main.OS().addQuit()) {
-			helpMenu.add(new JMenuItem(aboutAction));	
-		}
-		if (helpMenu.getItemCount() >= 1) {
+			if (Main.OS().addQuit()) {
+				helpMenu.add(new JMenuItem(aboutAction));	
+			}
 			mainMenuBar.add(helpMenu);
-		}
 		return mainMenuBar;
 	}
 	public class exitActionClass extends AbstractAction {
@@ -91,6 +109,14 @@ public class MainWindow extends AbstractWindow implements WindowListener {
 		}
 		public void actionPerformed(ActionEvent e) {
 			Main.preferences();
+		}
+	}
+	public class closeActionClass extends AbstractAction {
+		public closeActionClass(String text, KeyStroke shortcut) {
+			super(text);
+		}
+		public void actionPerformed(ActionEvent e) {
+			Main.closeActiveWindow();
 		}
 	}
 }

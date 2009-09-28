@@ -17,6 +17,8 @@ public class OSSpecificOSX extends OSSpecific {
 	private static final String LOGS = "Logs";
 	private static final String APPSUP = "Application Support";
 	
+	protected FileDialog dialog; 
+	
 	public OSSpecificOSX() {
 		super();	
 	}
@@ -100,29 +102,35 @@ public class OSSpecificOSX extends OSSpecific {
 			Main.Logger().warning("Could not open folder: " + e.getMessage());
 		}
 	}
+	public boolean dialogShowing() {
+		return super.dialogShowing() || !(dialog == null) && dialog.isVisible();
+	}
 	protected File saveOpenFileDialog(Frame parent, boolean dirsonly, String title, String dir, Filefilter[] filters, boolean save) {
 		if (filters.length > 1) {
 			return super.saveOpenFileDialog(parent, dirsonly, title, dir, filters, save);
 		} else {
-			FileDialog dialog = new FileDialog(parent,title,(save ? FileDialog.SAVE : FileDialog.LOAD));
-			if (dir == null) {
-				dialog.setDirectory(homeDir());
-			} else {
-				dialog.setDirectory(dir);	
-			}
-			if (filters.length > 0) {
-				dialog.setFilenameFilter(FileUtils.getExtFilenameFilter(filters[0]));
-			}
-			if (dirsonly) {
-				System.setProperty("apple.awt.fileDialogForDirectories", "true");
-			} else {
-				System.setProperty("apple.awt.fileDialogForDirectories", "false"); //Make sure this is set, incase other code hasn't cleaned up
-			}
-			dialog.show();
-			System.setProperty("apple.awt.fileDialogForDirectories", "false"); //Always make sure we clean up
-			String filename = dialog.getFile();
-			if (filename != null) {
-				return new File(dialog.getDirectory() + fileSeparator() + filename);
+			if (!dialogShowing()) {
+				dialog = new FileDialog(parent,title,(save ? FileDialog.SAVE : FileDialog.LOAD));
+				if (dir == null) {
+					dialog.setDirectory(homeDir());
+				} else {
+					dialog.setDirectory(dir);	
+				}
+				if (filters.length > 0) {
+					dialog.setFilenameFilter(FileUtils.getExtFilenameFilter(filters[0]));
+				}
+				if (dirsonly) {
+					System.setProperty("apple.awt.fileDialogForDirectories", "true");
+				} else {
+					System.setProperty("apple.awt.fileDialogForDirectories", "false"); //Make sure this is set, incase other code hasn't cleaned up
+				}
+				dialog.show();
+				System.setProperty("apple.awt.fileDialogForDirectories", "false"); //Always make sure we clean up
+				String filename = dialog.getFile();
+				if (filename != null) {
+					return new File(dialog.getDirectory() + fileSeparator() + filename);
+				}
+				dialog = null;
 			}
 			return null;
 		}

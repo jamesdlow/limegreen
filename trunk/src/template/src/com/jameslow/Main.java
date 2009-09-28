@@ -3,6 +3,8 @@ package com.jameslow;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.logging.*;
+import java.util.List;
+import java.util.*;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
@@ -14,6 +16,7 @@ public class Main {
 	protected static AutoUpdate autoupdate;
 	protected static AbstractWindow window;
 	protected static AbstractWindow pref;
+	protected static List windows = new ArrayList();
 	protected static String prefclass;
 	protected static String aboutclass;
 	protected static Main instance;
@@ -52,6 +55,45 @@ public class Main {
 			panel = (AboutPanel) newInstance(aboutclass);
 		}
 		JOptionPane.showMessageDialog(parent,panel,"About",JOptionPane.INFORMATION_MESSAGE,AboutImage());
+	}
+	public static void setPref(AbstractWindow window) {
+		if (pref != null) {
+			removeWindow(pref);
+		}
+		pref = window;
+		addWindow(pref);
+	}
+	public static void addWindow(AbstractWindow window) {
+		windows.add(window);
+	}
+	public static void removeWindow(AbstractWindow window) {
+		windows.remove(window);
+	}
+	public static List getWindows() {
+		return windows;
+	}
+	public static void closeActiveWindow() {
+		for(int i=0; i<windows.size(); i++) {
+			try {
+				AbstractWindow window = (AbstractWindow)windows.get(i);
+				if (window != null && window.isActive()) {
+					closeWindow(window);
+				}
+			} catch (Exception e) {
+				logger.warning("Cannot close window: " + e.getMessage());
+			}
+		}
+	}
+	public static void closeWindow(AbstractWindow window) {
+		if (window.getJustHide()) {
+			window.setVisible(false);
+		} else {
+			if (window.onClose() && instance.onClose(window)) {
+				window.setVisible(false);
+				removeWindow(window);
+			}
+		}
+
 	}
 	public static void preferences() {
 		if (pref == null) {
@@ -173,6 +215,7 @@ public class Main {
 							} else {
 								window = (AbstractWindow) newInstance(window_name);
 							}
+							addWindow(window);
 							window.setVisible(window.getWindowSettings().getVisible());
 						}
 					} catch (Exception ex) {
@@ -196,6 +239,9 @@ public class Main {
 	}
 	public static void main(String args[]) {
 		instance = new Main(args);
+	}
+	protected boolean onClose(AbstractWindow window) {
+		return true;
 	}
 	protected boolean onQuit() {
 		return true;
