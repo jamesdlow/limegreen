@@ -26,7 +26,10 @@ public class OSSpecific {
 	protected static final ResourceBundle build = ResourceBundle.getBundle(BUILD_BUNDLE, Locale.getDefault());
 	protected static final ResourceBundle main = ResourceBundle.getBundle(MAIN_BUNDLE, Locale.getDefault());
 	protected static final Properties properties = System.getProperties();
-	protected static final String osname = properties.getProperty("os.name").toLowerCase(); 
+	protected static final String osname = properties.getProperty("os.name").toLowerCase();
+	
+	//Class variables
+	protected JFileChooser fc;
 	
 	//Constants
 	protected String homedir;
@@ -166,24 +169,30 @@ public class OSSpecific {
 	public File openFileDialog(Frame parent, boolean dirsonly, String title, String dir, Filefilter[] filters) {
 		return saveOpenFileDialog(parent,dirsonly,title,dir,filters,false);
 	}
+	public boolean dialogShowing() {
+		return !(fc == null) && fc.isVisible();
+	}
 	protected File saveOpenFileDialog(Frame parent, boolean dirsonly, String title, String dir, Filefilter[] filters, boolean save) {
-		JFileChooser fc = new JFileChooser(dir);
-		if (dirsonly) {
-			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		if (!dialogShowing()) {
+			fc = new JFileChooser(dir);
+			if (dirsonly) {
+				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			}
+			for (int i=0; i<filters.length; i++) {
+				fc.addChoosableFileFilter(FileUtils.getExtFileFilter(filters[i]));
+			}
+			if (title != null) {
+				fc.setDialogTitle(title);
+			}
+			if (save) {
+				fc.setDialogType(JFileChooser.SAVE_DIALOG);
+			}
+			int returnVal = fc.showOpenDialog(parent);
+	        if (returnVal == JFileChooser.APPROVE_OPTION) {
+	            return fc.getSelectedFile();
+	        }
+	        fc = null;
 		}
-		for (int i=0; i<filters.length; i++) {
-			fc.addChoosableFileFilter(FileUtils.getExtFileFilter(filters[i]));
-		}
-		if (title != null) {
-			fc.setDialogTitle(title);
-		}
-		if (save) {
-			fc.setDialogType(JFileChooser.SAVE_DIALOG);
-		}
-		int returnVal = fc.showOpenDialog(parent);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            return fc.getSelectedFile();
-        }
         return null;
 	}
 	public File saveFileDialog(Frame parent) {
