@@ -1,12 +1,13 @@
 package com.jameslow;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.KeyStroke;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
 
 public abstract class AbstractWindow extends JFrame {
+	protected static final int BUFFER_WIDTH = 100;
+	protected static final int BUFFER_HEIGHT = 100;
+	
 	public AbstractWindow() {
 		super();
 		setTitle(getDefaultTitle());
@@ -17,12 +18,64 @@ public abstract class AbstractWindow extends JFrame {
 				setIconImage(image.getImage());
 			}
 		}
+		addComponentListener(new ComponentListener() {
+			public void componentHidden(ComponentEvent e) {}
+			public void componentMoved(ComponentEvent e) {
+				saveWindowSettings();
+			}
+			public void componentResized(ComponentEvent e) {
+				saveWindowSettings();
+			}
+			public void componentShown(ComponentEvent e) {
+				saveWindowSettings();
+			}
+		});
 		Main.addWindow(this);
 	}
 	public abstract String getDefaultTitle();
 	public abstract WindowSettings getDefaultWindowSettings();
+	public void saveWindowSettings() {
+		Main.Settings().setWindowSettings(getWindowSettingsKey(), getSaveWindowSettings());
+		Main.Settings().saveSettings();
+	}
+	public WindowSettings getSaveWindowSettings() {
+		WindowSettings ws = getCurrentWindowSettings();
+		if (alwaysShow()) {
+			ws.setVisible(true);
+		} else if (alwaysHide()) {
+			ws.setVisible(false);
+		}
+		return ws;
+	}
+	public WindowSettings getCurrentWindowSettings() {
+		return new WindowSettings(getWidth(), getHeight(), getX(), getY(), isVisible(), getExtendedState());
+	}
 	public WindowSettings getWindowSettings() {
-		return Main.Settings().getWindowSettings(getClass().getName(),getDefaultWindowSettings());
+		WindowSettings ws = Main.Settings().getWindowSettings(getWindowSettingsKey(),getDefaultWindowSettings());
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment(); 
+		GraphicsDevice[] gd = ge.getScreenDevices();
+		int j = 0;
+		boolean onscreen = false;
+		while (!onscreen && j < gd.length) { 
+			GraphicsConfiguration[] gc = gd[j].getConfigurations();
+			int i = 0;
+			while (!onscreen && i < gc.length) { 
+				Rectangle screen = gc[i].getBounds();
+				if (ws.getLeft() >= screen.x
+					&& ws.getLeft() <  (screen.x +  screen.width - (screen.width > BUFFER_WIDTH ? BUFFER_WIDTH : 0))
+					&& ws.getTop() >= screen.y
+					&& ws.getTop() <  (screen.y +  screen.height - (screen.height > BUFFER_HEIGHT ? BUFFER_HEIGHT : 0))) {
+					onscreen = true;
+				}
+			    i++;
+			}
+			j++;
+		}
+		if (onscreen) {
+			return ws;
+		} else {
+			return getDefaultWindowSettings();
+		}
 	}
 	public void setBounds(WindowSettings settings) {
 		setBounds(settings.getLeft(), settings.getTop(), settings.getWidth(), settings.getHeight());
@@ -40,5 +93,14 @@ public abstract class AbstractWindow extends JFrame {
 	}
 	public boolean onClose() {
 		return true;
+	}
+	public boolean alwaysShow() {
+		return false;
+	}
+	public boolean alwaysHide() {
+		return false;
+	}
+	public String getWindowSettingsKey() {
+		return getClass().getName();
 	}
 }
