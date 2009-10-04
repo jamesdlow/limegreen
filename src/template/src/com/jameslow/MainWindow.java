@@ -18,7 +18,10 @@ public class MainWindow extends AbstractWindow implements WindowListener {
 		return Main.Settings().getTitle();
 	}
 	public WindowSettings getDefaultWindowSettings() {
-		return new WindowSettings(320,160,0,0,true);
+		return new WindowSettings(320,160,0,0,true,JFrame.NORMAL);
+	}
+	public boolean alwaysShow() {
+		return false;
 	}
 	public void windowClosing(WindowEvent e) {
 		Main.quit();

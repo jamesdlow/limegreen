@@ -10,6 +10,8 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes.Name;
 
+import javax.swing.JFrame;
+
 import com.jameslow.update.AutoUpdate;
 
 /**
@@ -52,6 +54,7 @@ public class Settings {
 	public static final String TOP = "Top";
 	public static final String LEFT = "Left";
 	public static final String VISIBLE = "Visible";
+	public static final String EXTENDED_STATE = "ExtendedState";
 	public static final String WINDOW = "Windows.Window";
 	
 	public static final String AUTOUPDATE = AutoUpdate.AUTOUPDATE+".AutoUpdate";
@@ -370,16 +373,15 @@ public class Settings {
 		return getXMLHelperByName(WINDOW, classname);
 	}
 	public WindowSettings getWindowSettings(String classname) {
-		return getWindowSettings(classname,320,160,0,0,true);
+		return getWindowSettings(classname,new WindowSettings());
 	}
-	public WindowSettings getWindowSettings(String classname, int width, int height, int left,int top, boolean visible) {
-		return getWindowSettings(classname,new WindowSettings(width,height,left,top,visible));
+	public WindowSettings getWindowSettings(String classname, int width, int height, int left,int top, boolean visible, int extended_state) {
+		return getWindowSettings(classname,new WindowSettings(width,height,left,top,visible,extended_state));
 	}
 	public WindowSettings getWindowSettings(String classname, WindowSettings ws) {
 		XMLHelper window = getWindowXMLHelper(classname);
 		if (!window.getIsNewNode()) {
-			//TODO: Decide if here, if even one value is wrong, we should return all the defaults, and also save them
-			ws = new WindowSettings(window.getValue(WIDTH, ws.getWidth()),window.getValue(HEIGHT, ws.getHeight()),window.getValue(LEFT, ws.getLeft()),window.getValue(TOP, ws.getTop()),window.getValue(VISIBLE, ws.getVisible()));
+			ws = new WindowSettings(window.getValue(WIDTH, ws.getWidth()),window.getValue(HEIGHT, ws.getHeight()),window.getValue(LEFT, ws.getLeft()),window.getValue(TOP, ws.getTop()),window.getValue(VISIBLE, ws.getVisible()),window.getValue(EXTENDED_STATE,ws.getExtendedState()));
 		}
 		setWindowSettings(classname,ws);
 		return ws;
