@@ -2,8 +2,9 @@
 <project name="Limegreen" default="build" basedir=".">
 	<property name="props" value="build.properties"/>
 	<property name="secret" value="secret.properties"/>
+	<property name="secret.example" value="secret.example.properties"/>
+	<property name="secret.temp" value="secret.temp.properties"/>
 	<property file="${props}"/>
-	<property file="${secret}"/>
 	<property name="name" value="${application.name}"/>
 	<!-- Preexisitng Directories -->
 	<property name="src" location="src"/>
@@ -36,7 +37,15 @@
 		<property name="app" location="${build}/app"/>
 			<property name="new.stub" location="${app}/${name}"/>
 		<property name="exe" location="${build}/exe"/>
-	
+
+	<available file="${secret}" property="secret.present"/>
+	<condition property="copy.do">
+		<isfalse value="${secret.present}"/>
+	</condition>
+	<condition property="copy.dont">
+		<istrue value="${secret.present}"/>
+	</condition>
+
 	<fileset id="jar.jars" dir="${jarbundler}">
 		<include name="**/*.jar"/>
 	</fileset>
@@ -155,6 +164,13 @@
 		<pathelement path="${jsmooth}/jnismooth.jar"/>
 	</path>
 	
+	<target name="secret.copy" description="Copy secret file if it doesn't exist" if="copy.do">
+		<copy file="${secret.example}" tofile="${secret}" overwrite="false"/>
+	</target>
+	<target name="secret" depends="secret.copy" description="Source the secret file">
+		<property file="${secret}"/>
+	</target>
+	
 	<target name="compile.onejar" description="Compile onejar">
 		<javac srcdir="${onejar}" destdir="${onejar}"
 			source="1.4" target="1.4"
@@ -179,7 +195,7 @@
 		</javac>
 	</target>
 	
-	<target name="prepare" description="Create build dirs">
+	<target name="prepare" depends="secret" description="Create build dirs">
 		<mkdir dir="${build}"/>
 			<mkdir dir="${bin}"/>
 			<mkdir dir="${dist}"/>
@@ -350,18 +366,18 @@
 	<target name="source.zip" depends="version,jar" description="Make source zip">
 		<property name="source.zip" value="${name}-source-${new.version}.zip"/>
 		<property name="source.zip.full" location="${dist}/${source.zip}"/>
-		<move file="${secret}" tofile="secret.temp.properties"/>
-		<copy file="secret.example.properties" tofile="${secret}"/>
+		<move file="${secret}" tofile="${secret.temp}"/>
+		<copy file="${secret.example}" tofile="${secret}"/>
 		<zip destfile="${source.zip.full}">
 			<fileset dir=".">
 				<include name="**"/>
 				<exclude name="**/.svn/**"/>
 				<exclude name="**/build/**"/>
-				<exclude name="secret.temp.properties"/>
+				<exclude name="${secret.temp}"/>
 			</fileset>
 		</zip>
-		<delete file="secret.properties"/>
-		<move file="secret.temp.properties" tofile="secret.properties"/>
+		<delete file="${secret}"/>
+		<move file="${secret.temp}" tofile="${secret}"/>
 	</target>
 
 	<target name="run" depends="jar" description="Run jar file">
