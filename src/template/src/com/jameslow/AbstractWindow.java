@@ -79,6 +79,7 @@ public abstract class AbstractWindow extends JFrame {
 	}
 	public void setBounds(WindowSettings settings) {
 		setBounds(settings.getLeft(), settings.getTop(), settings.getWidth(), settings.getHeight());
+		setExtendedState(settings.getExtendedState());
 	}
 	public void setDefaultBounds() {
 		setBounds(getDefaultWindowSettings());
