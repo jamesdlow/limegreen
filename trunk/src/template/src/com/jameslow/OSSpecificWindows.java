@@ -50,4 +50,10 @@ public class OSSpecificWindows extends OSSpecific {
 	public void showFile(String file) {
 		openFolder(FileUtils.GetFolder(file));
 	}
+	public boolean killProcess(String name) {
+		return true;
+	}
+	public boolean killProcess(int pid) {
+		return true;
+	}
 }
