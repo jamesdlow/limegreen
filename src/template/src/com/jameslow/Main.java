@@ -119,8 +119,12 @@ public class Main {
 		}
 	}
 	public static void quit() {
-		if (instance.onQuit()) {
-			System.exit(0);
+		try {
+			if (instance.onQuit()) {
+				System.exit(0);
+			}	
+		} catch (Exception e) {
+			Logger().severe("Error when quiting: " + e.getMessage());
 		}
 	}
 

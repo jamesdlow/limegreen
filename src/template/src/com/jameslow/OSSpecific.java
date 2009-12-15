@@ -210,13 +210,15 @@ public class OSSpecific {
 	
 	//Some process commands
 	public boolean killProcess(String name) {
-		String[] args = {"ps","-ef"};
-		String result = executeProcess(args);
+		String[] args = {"ps","-a"};
+		//String[] args = {"ps","-ef"}; This doesn't execute on some verions of java due to security issues
+		String result = executeProcessWait(args);
 		BufferedReader reader = new BufferedReader(new StringReader(result));
 		String line;
 		try {
 			while ((line = reader.readLine()) != null) {
 				if (line.indexOf(name) >= 0) {
+					/* For ps -ef
 					int i = 0;
 					while (i < line.length() && line.substring(i, i+1).trim().length() == 0) {
 						i++;
@@ -228,6 +230,8 @@ public class OSSpecific {
 						i++;
 					}
 					int pid = Integer.parseInt(line.substring(i,line.indexOf(" ",i)).trim());
+					*/
+					int pid = Integer.parseInt(line.substring(0,line.indexOf(" ")).trim());
 					killProcess(pid);
 				}
 			}
@@ -242,37 +246,43 @@ public class OSSpecific {
 		args[0] = "kill";
 		args[1] = "-9";
 		args[2] = ""+pid;
-		executeProcess(args);
+		executeProcessWait(args);
 		return true;
 	}
-	public String executeProcess(String[] args) {
-		return executeProcess(args,0);
-	}
-	public String executeProcess(String[] args, int expectedreturn) {
+	public void executeProcess(String[] args) {
 		try {
 			Process p = Runtime.getRuntime().exec(args);
-			StringBuffer bufe = new StringBuffer();
-			StringBuffer bufi = new StringBuffer();
-			InputStream e = p.getErrorStream();
-			InputStream i = p.getInputStream();
-			int c;
-			while ((c = e.read()) != -1) {
-			    bufe.append((char) c);
-			}
-			while ((c = i.read()) != -1) {
-			    bufi.append((char) c);
-			}
+		} catch (Exception e) {
+			Main.Logger().warning("Error executing process: "+e.getMessage());
+		}
+	}
+	public String executeProcessWait(String[] args) {
+		return executeProcessWait(args,0);
+	}
+	public String executeProcessWait(String[] args, int expectedreturn) {
+		try {
+			Process p = Runtime.getRuntime().exec(args);
 			int exitVal = p.waitFor();
-			if (bufe.length() > 0) {
-				Main.Logger().warning(bufe.toString());
-			}
-			if (bufi.length() > 0) {
-				Main.Logger().info(bufi.toString());
-			}
+			int c;
+			StringBuffer buf = new StringBuffer();
 			if (exitVal == expectedreturn) {
-				return bufi.toString();
+				InputStream i = p.getInputStream();
+				while ((c = i.read()) != -1) {
+				    buf.append((char) c);
+				}
+				if (buf.length() > 0) {
+					Main.Logger().info(buf.toString());
+				}
+				return buf.toString();
 			} else {
-				return bufe.toString();
+				InputStream e = p.getErrorStream();
+				while ((c = e.read()) != -1) {
+				    buf.append((char) c);
+				}
+				if (buf.length() > 0) {
+					Main.Logger().warning(buf.toString());
+				}
+				return buf.toString();
 			}
 		} catch (Exception e) {
 			Main.Logger().warning("Error executing process: "+e.getMessage());
@@ -293,7 +303,7 @@ public class OSSpecific {
 			try {
 				out.close();
 				String[] args = { "chmod", "744",file.getAbsolutePath()};
-				String result = executeProcess(args);
+				String result = executeProcessWait(args);
 				return result.length() == 0;
 			} catch (Exception e) {
 				//Only works on Unix like systems
