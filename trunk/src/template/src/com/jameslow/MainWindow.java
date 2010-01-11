@@ -40,7 +40,7 @@ public class MainWindow extends AbstractWindow implements WindowListener {
 		if (Main.OS().addQuit()) {
 			aboutAction = new aboutActionClass("About", KeyStroke.getKeyStroke(KeyEvent.VK_B, shortcutKeyMask));
 			exitAction = new exitActionClass("Exit", KeyStroke.getKeyStroke(KeyEvent.VK_X, shortcutKeyMask));
-			prefAction = new exitActionClass("Options", KeyStroke.getKeyStroke(KeyEvent.VK_O, shortcutKeyMask));
+			prefAction = new prefActionClass("Options", KeyStroke.getKeyStroke(KeyEvent.VK_O, shortcutKeyMask));
 		}
 		closeAction = new closeActionClass("Close",KeyStroke.getKeyStroke(KeyEvent.VK_W, shortcutKeyMask));
 		createOtherActions();
