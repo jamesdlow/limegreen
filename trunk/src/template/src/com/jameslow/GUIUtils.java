@@ -32,6 +32,14 @@ public class GUIUtils {
 		    }
 		});
 	}
+	public static BufferedImage componentToImage(JComponent comp) throws IOException {
+		int w = comp.getWidth(), h = comp.getHeight();
+		BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g2 = image.createGraphics();
+		comp.paint(g2);
+		g2.dispose();
+		return image;
+	}
 	public static void componentToImage(JComponent comp, String filename) throws IOException {
 		int w = comp.getWidth(), h = comp.getHeight();
 		BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
