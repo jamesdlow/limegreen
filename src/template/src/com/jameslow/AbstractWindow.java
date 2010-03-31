@@ -77,6 +77,14 @@ public abstract class AbstractWindow extends JFrame {
 			return getDefaultWindowSettings();
 		}
 	}
+	public Dimension getInnerSize() {
+		Insets i = getInsets();
+		return new Dimension(getWidth()-i.left-i.right,getHeight()-i.top-i.bottom);
+	}
+	public void setInnerSize(Dimension d) {
+		Insets i = getInsets();
+		setSize((int) (d.getWidth()+i.left+i.right),(int) (d.getHeight()+i.top+i.bottom));
+	}
 	public void setBounds(WindowSettings settings) {
 		setBounds(settings.getLeft(), settings.getTop(), settings.getWidth(), settings.getHeight());
 		setExtendedState(settings.getExtendedState());
