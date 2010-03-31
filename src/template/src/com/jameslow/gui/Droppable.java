@@ -67,7 +67,7 @@ public class Droppable implements DropTargetListener, DragSourceListener, DragGe
 			listeners.add(listener);
 		}
 		this.comp = comp;
-		dragSource.createDefaultDragGestureRecognizer(comp, DnDConstants.ACTION_COPY_OR_MOVE, this);	
+		dragSource.createDefaultDragGestureRecognizer(comp, DnDConstants.ACTION_COPY, this);	
 	}
 	public JComponent getComponent() {
 		return comp;
@@ -305,8 +305,8 @@ public class Droppable implements DropTargetListener, DragSourceListener, DragGe
 			*/
 		}
 	}
-	public void dragOver(DragSourceDragEvent DragSourceDragEvent) {}
-	public void dropActionChanged(DragSourceDragEvent DragSourceDragEvent) {}
+	public void dragOver(DragSourceDragEvent dragSourceDragEvent) {}
+	public void dropActionChanged(DragSourceDragEvent dragSourceDragEvent) {}
 	public void dragEnter (DropTargetDragEvent dropTargetDragEvent) {
 		dropTargetDragEvent.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
 		overIndex = locationToIndex(dropTargetDragEvent.getLocation());
@@ -334,7 +334,7 @@ public class Droppable implements DropTargetListener, DragSourceListener, DragGe
 		try {
 			Transferable tr = dropTargetDropEvent.getTransferable();
 			if (allow_rearrange && dragging && tr.isDataFlavorSupported(LimegreenStringFlavor)) {
-				dropTargetDropEvent.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+				dropTargetDropEvent.acceptDrop(DnDConstants.ACTION_COPY);
 				DataFlavor[] flavors = tr.getTransferDataFlavors();
 				List<LimegreenString> lgstrings = (List<LimegreenString>) tr.getTransferData(LimegreenStringFlavor);
 				int i = 1;
