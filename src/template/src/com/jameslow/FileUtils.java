@@ -149,4 +149,22 @@ public class FileUtils {
 		}
 		return dir.getAbsolutePath();
 	}
+	public static String readFirstLine(File file) {
+		String line = "";
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			line = br.readLine();
+		} catch (Exception e) {
+			Main.Logger().warning("Could not read line from file: " + file.getPath() + " "+ e.getMessage());
+		}
+		return line;
+	}
+	public static boolean exts(String filename, String[] exts) {
+		for (int i=0; i<exts.length; i++) {
+			if (filename.endsWith(exts[i])) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
