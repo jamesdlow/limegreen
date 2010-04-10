@@ -66,7 +66,6 @@ public class Settings {
 		loadProperties();
 		loadFiles();
 		loadCommonSettings();
-		loadSettings();
 	}
 	public void loadCommonSettings() {
 		logtofile = getSetting("Common.Log.ToFile", logtofile);

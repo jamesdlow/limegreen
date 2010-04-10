@@ -194,6 +194,7 @@ public class Main {
 			} else {
 				settings = (Settings) newInstance(settings_name);
 			}
+			settings.loadSettings();
 			if (logger_name == null) {
 				logger = initLogger();
 			} else {
