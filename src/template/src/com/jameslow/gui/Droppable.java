@@ -182,16 +182,15 @@ public class Droppable implements DropTargetListener, DragSourceListener, DragGe
 		addFilepath(path,getSelectedIndex());
 	}
 	public void addFilepath(String path, int index) {
-		String filename = FileUtils.getFilename(path);
 		if (index == -1 || index >= paths.size()) {
 			paths.add(path);
 			for (DroppableListener listener : listeners) {
-				listener.addFilePath(filename);
+				listener.addFilePath(path);
 			}
 		} else {
 			paths.add(index, path);
 			for (DroppableListener listener : listeners) {
-				listener.addFilePath(index, filename);
+				listener.addFilePath(index, path);
 			}
 			setSelectedIndex(index);
 		}
