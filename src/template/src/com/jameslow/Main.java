@@ -190,10 +190,11 @@ public class Main {
 				os = (OSSpecific) newInstance(cmd_name);
 			}
 			if (settings_name == null) {
-				settings = new Settings();  
+				settings = new Settings();
 			} else {
 				settings = (Settings) newInstance(settings_name);
 			}
+			settings.loadSettings();
 			if (logger_name == null) {
 				logger = initLogger();
 			} else {
