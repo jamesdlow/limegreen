@@ -14,6 +14,7 @@ public class MainWindow extends AbstractWindow implements WindowListener {
 		createActions();
 		setJMenuBar(createMenu());
 	}
+	public void postLoad() {};
 	public String getDefaultTitle() {
 		return Main.Settings().getTitle();
 	}

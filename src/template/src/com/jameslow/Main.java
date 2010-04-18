@@ -194,7 +194,6 @@ public class Main {
 			} else {
 				settings = (Settings) newInstance(settings_name);
 			}
-			settings.loadSettings();
 			if (logger_name == null) {
 				logger = initLogger();
 			} else {
@@ -222,6 +221,7 @@ public class Main {
 							}
 							addWindow(window);
 							window.setVisible(window.getWindowSettings().getVisible());
+							window.postLoad();
 						}
 					} catch (Exception ex) {
 						ex.printStackTrace();
