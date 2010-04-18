@@ -32,6 +32,7 @@ public abstract class AbstractWindow extends JFrame {
 		});
 		Main.addWindow(this);
 	}
+	public abstract void postLoad();
 	public abstract String getDefaultTitle();
 	public abstract WindowSettings getDefaultWindowSettings();
 	public void saveWindowSettings() {
