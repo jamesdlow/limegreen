@@ -365,6 +365,12 @@ public class Settings {
 	public void setSetting64(String key, String value) {
 		xmlhelper.setValue(key,Base64Coder.encodeString(value));
 	}
+	public byte[] getSetting64(String key, byte[] def) {
+		return getSetting64(key,def.toString()).getBytes();
+	}
+	public void setSetting64(String key, byte[] value) {
+		xmlhelper.setValue(key,value.toString());
+	}
 	public XMLHelper getXMLHelper(String key) {
 		return xmlhelper.getSubNode(key);
 	}
