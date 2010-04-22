@@ -359,6 +359,12 @@ public class Settings {
 	public void setSetting(String key, Color value) {
 		xmlhelper.setValue(key, value);
 	}
+	public String getSetting64(String key, String def) {
+		return Base64Coder.decodeString(xmlhelper.getValue(key, Base64Coder.encodeString(def)));
+	}
+	public void setSetting64(String key, String value) {
+		xmlhelper.setValue(key,Base64Coder.encodeString(value));
+	}
 	public XMLHelper getXMLHelper(String key) {
 		return xmlhelper.getSubNode(key);
 	}
