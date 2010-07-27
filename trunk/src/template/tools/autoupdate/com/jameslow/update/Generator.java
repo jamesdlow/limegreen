@@ -10,7 +10,7 @@ import com.jameslow.*;
 
 public class Generator extends JFrame implements WindowListener, ItemListener, ActionListener {
 	//Other
-	private boolean active = true;
+	private volatile boolean active = true;
 	private String versionpage;
 	private boolean experimental;
 	private JLabel contentlabel = new JLabel("Enter version information (html ok) here:");
@@ -123,7 +123,7 @@ public class Generator extends JFrame implements WindowListener, ItemListener, A
 		Object source = e.getSource();
 		if (source == donebutton) {
 			active = false;
-			this.hide();
+			hide();
 		}
 	}
 	public void itemStateChanged(ItemEvent e) {
@@ -253,6 +253,7 @@ public class Generator extends JFrame implements WindowListener, ItemListener, A
 		String versionpagedefault = apppage+(apppage.lastIndexOf("?")>=0 ? "&" : "?" )+LIMEGREENBUILD+"="+build;
 		versionpagefield.setText(versionpagedefault);
 		show();
+		
 		while (active) {
 			//this will finish once the user clicks done
 		}
