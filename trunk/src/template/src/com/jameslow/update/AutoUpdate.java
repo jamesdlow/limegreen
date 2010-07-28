@@ -89,7 +89,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 	public void checkForUpdates(String appname, String url, String version, int build,
 				boolean allowminor, boolean allowexperimental, boolean allowautoupdate,
 				boolean includeminor, boolean includeexperimental, boolean autoupdate,
-				ActionListener update, ActionListener cancel) {
+				ActionListener update, ActionListener cancel, WindowListener closewindow) {
 		if (allowautoupdate && autoupdate) {
 			this.autoupdate = autoupdate;
 			this.includeexperimental = includeexperimental;
@@ -113,7 +113,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 			    String versioninfo;
 			    try {
 			    	if ((versioninfo = parseXML(versionxml, version, build)) != null) {
-			    		constructWindow(versioninfo);
+			    		constructWindow(versioninfo,closewindow);
 			    	} else {
 			    		cancel("Version up to date.");
 			    	}
@@ -326,7 +326,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 		}
 		return null;
 	}
-	private void constructWindow(String version) {
+	private void constructWindow(String version, WindowListener closewindow) {
 		//Construct window
 		int width = 550;
 		int height = 350;
@@ -370,7 +370,8 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 					installbutton.setEnabled(false);
 				installpanel.add(installbutton, BorderLayout.WEST);
 		window.setBounds((int) (center.getX() - width/2),(int) (center.getY() - height/2), width, height);
-		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		//window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		window.addWindowListener(closewindow);
 		window.show();
 	}
 	public void itemStateChanged(ItemEvent e) {
@@ -709,7 +710,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 		Error(msg,null);
 	}
 	public static void Error(String msg, Component parent) {
-		JOptionPane.showMessageDialog(parent, msg);
+		JOptionPane.showMessageDialog((parent == null ? new JFrame() : parent), msg);
 	}
 	public static void Pause(long s) {
 		try {
