@@ -12,6 +12,9 @@
 	<property name="tools" location="tools"/>
 		<property name="antlib" location="${tools}/antlib"/>
 		<property name="manifest" location="${tools}/manifest"/>
+			<property name="main.manifest" value="main-MANIFEST.MF"/>
+			<property name="include.manifest" value="include-MANIFEST.MF"/>
+			<property name="onejar.manifest" value="onejar-MANIFEST.MF"/>
 		<property name="onejar" location="${tools}/onejar"/>
 		<property name="autoupdate" location="${tools}/autoupdate"/>
 			<property name="atomfile" value="${name}.xml"/>
@@ -24,6 +27,7 @@
 		<property name="google" location="${tools}/google"/>
 	<!-- Output Directories -->
 	<property name="build" location="build"/>
+		<property name="misc" location="${build}/misc"/>
 		<property name="bin" location="${build}/bin"/>
 		<property name="dist" location="${build}/dist"/>
 			<property name="jarfile" location="${dist}/${name}.jar"/>
@@ -204,6 +208,7 @@
 				<mkdir dir="${jar.lib}"/>
 			<mkdir dir="${app}"/>
 			<mkdir dir="${exe}"/>
+			<mkdir dir="${misc}"/>
 	</target>
 	
 	<target name="version.input" depends="prepare" if="version.do">
@@ -252,7 +257,10 @@
 			</fileset>
 		</copy>
 		<copy file="${props}" todir="${bin}"/>
-		<manifest file="${manifest}/main-MANIFEST.MF">
+		<copy file="${manifest}/${main.manifest}" todir="${misc}"/>
+		<copy file="${manifest}/${include.manifest}" todir="${misc}"/>
+		<copy file="${manifest}/${onejar.manifest}" todir="${misc}"/>
+		<manifest file="${misc}/${main.manifest}">
 			<attribute name="Manifest-Version" value="1.0"/>
 			<attribute name="Main-Class" value="${main.class}"/>
 		</manifest>
@@ -269,16 +277,16 @@
 		</manifestclasspath>
 			<attribute name="Class-Path" value="${jar.classpath}" />
 		-->
-		<jar jarfile="${jarfile.main}" basedir="${bin}" manifest="${manifest}/main-MANIFEST.MF">
+		<jar jarfile="${jarfile.main}" basedir="${bin}" manifest="${misc}/${main.manifest}">
 		</jar>
-		<jar jarfile="${jarfile}" manifest="${manifest}/onejar-MANIFEST.MF">
+		<jar jarfile="${jarfile}" manifest="${misc}/${onejar.manifest}">
 			<fileset dir="${jar}"/>
 			<fileset dir="${onejar}" includes="**/*.class"/>
 		</jar>
 	</target>
 	<target name="jar.include" depends="compile" if="include.do">
 		<echo message="Extracting and including library jars in main jar, onejar.use=${onejar.use}."/>
-		<jar jarfile="${jarfile}" basedir="${bin}" manifest="${manifest}/main-MANIFEST.MF">
+		<jar jarfile="${jarfile}" basedir="${bin}" manifest="${misc}/${main.manifest}">
 			<!-- Merge library jars into final jar file -->
 			<zipgroupfileset refid="lib.jars"/>
 		</jar>

@@ -212,29 +212,46 @@ public class Main {
 			};
 			ActionListener cancel = new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					try {
-						saveUpdateSettings();
-						if (!cmd.getQuiet()) {
-							if (window_name == null) {
-								window = new MainWindow();
-							} else {
-								window = (AbstractWindow) newInstance(window_name);
-							}
-							addWindow(window);
-							window.setVisible(window.getWindowSettings().getVisible());
-							window.postLoad();
-						}
-					} catch (Exception ex) {
-						ex.printStackTrace();
-						logger.severe("Could not start application: "+ex.getMessage());
-					}
+					cancelUpdate(window_name);
 				}
+			};
+			WindowListener closewindow = new WindowListener() {
+				public void windowClosing(WindowEvent e) {
+					cancelUpdate(window_name);
+				}
+				public void windowClosed(WindowEvent e) {}
+				public void windowOpened(WindowEvent e) {}
+				public void windowIconified(WindowEvent e) {}
+				public void windowDeiconified(WindowEvent e) {}
+				public void windowActivated(WindowEvent e) {}
+				public void windowDeactivated(WindowEvent e) {}
+				public void windowGainedFocus(WindowEvent e) {}
+				public void windowLostFocus(WindowEvent e) {}
+				public void windowStateChanged(WindowEvent e) {}
 			};
 			autoupdate = new AutoUpdate();
 			autoupdate.checkForUpdates(settings.getTitle(), settings.getUpdateUrl(), settings.getVersion(), settings.getBuild(),
 					settings.getAllowMinor(), settings.getAllowExperimental(), settings.getAllowAutoUpdate(),
 					settings.getMinor(), settings.getExperimental(), settings.getAutoUpdate(),
-					update, cancel);
+					update, cancel, closewindow);
+		}
+	}
+	public void cancelUpdate(String window_name) {
+		try {
+			saveUpdateSettings();
+			if (!cmd.getQuiet()) {
+				if (window_name == null) {
+					window = new MainWindow();
+				} else {
+					window = (AbstractWindow) newInstance(window_name);
+				}
+				addWindow(window);
+				window.setVisible(window.getWindowSettings().getVisible());
+				window.postLoad();
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			logger.severe("Could not start application: "+ex.getMessage());
 		}
 	}
 	private static void saveUpdateSettings() {
