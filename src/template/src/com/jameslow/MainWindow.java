@@ -7,8 +7,11 @@ public class MainWindow extends AbstractWindow implements WindowListener {
 	protected Action aboutAction, exitAction, prefAction, closeAction;
 	
 	public MainWindow() {
+		this(false);
+	}
+	public MainWindow(boolean quitonclose) {
 		super();
-		if (Main.OS().addQuit()) {
+		if (Main.OS().addQuit() || quitonclose) {
 			addWindowListener(this);
 		}
 		createActions();
@@ -118,6 +121,7 @@ public class MainWindow extends AbstractWindow implements WindowListener {
 	public class closeActionClass extends AbstractAction {
 		public closeActionClass(String text, KeyStroke shortcut) {
 			super(text);
+			putValue(ACCELERATOR_KEY, shortcut);
 		}
 		public void actionPerformed(ActionEvent e) {
 			Main.closeActiveWindow();
