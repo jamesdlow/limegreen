@@ -252,9 +252,10 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 		return 0;
 	}
 	private String parseXML(String xversionxml, String version, int build) throws ParserConfigurationException, SAXException, IOException {
+		//TODO: For some reasons we don't preserve line feeds in node content
 		if ("".compareTo(xversionxml) != 0) {
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		DocumentBuilder db;
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db;
 			db = dbf.newDocumentBuilder();
 			Document dom = db.parse(new InputSource(new StringReader(xversionxml)));
 			Element docEle = dom.getDocumentElement();
@@ -317,7 +318,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 					versionhtml.append("<h1><font face=Arial>"+getTagValue(newer, ATOM_TITLE)+"</h1>");
 					versionhtml.append("<font face=Arial>Link: <a href=\""+thislink+"\">"+thislink+"</a>");
 					versionhtml.append("<br><font face=Arial>Version: "+getTagValue(newer,LIMEGREEN_VERSION)+" Build: "+getTagValue(newer,LIMEGREEN_BUILD));
-					versionhtml.append("<br><br><font face=Arial>"+getTagValue(newer,ATOM_CONTENT));
+					versionhtml.append("<br><br><font face=Arial>"+getTagValue(newer,ATOM_CONTENT).replaceAll("<br>(\\n|\\r\\n)|(\\n|\\r\\n)<br>|(\\n|\\r\\n)", "<br>\n"));
 					versionhtml.append("</td></tr></table></html>");
 					
 				}
