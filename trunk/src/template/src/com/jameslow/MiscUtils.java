@@ -8,6 +8,9 @@ public class MiscUtils {
 			t1 = System.currentTimeMillis();
 		} while (t1 - t0 < n);
 	}
+	public static boolean isblank(String s) {
+		return (s == null || "".compareTo(s) == 0);
+	}
 	public static boolean match(String needle, String haystack) {
 		String regex = " |,|\\.|;|:|\t";
 		String[] needles = needle.toUpperCase().split(regex);
