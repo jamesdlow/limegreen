@@ -31,6 +31,7 @@
 		<property name="bin" location="${build}/bin"/>
 		<property name="dist" location="${build}/dist"/>
 			<property name="jarfile" location="${dist}/${name}.jar"/>
+			<property name="jarfile.temp" location="${misc}/${name}.jar"/>
 			<property name="appfile" location="${dist}/${name}.app"/>
 			<property name="exefile" location="${dist}/${name}.exe"/>
 			<property name="jsmooth.outfile" location="${dist}/${name}.jsmooth"/>
@@ -238,6 +239,9 @@
 		<replace file="${jsmooth.outfile}" token="@jarfile@" value="${name}.jar"/>
 		<replace file="${jsmooth.outfile}" token="@mainclass@" value="${mainclass}"/>
 		<replace file="${jsmooth.outfile}" token="@exewrapper@" value="${build.exewrapper}"/>
+		<replace file="${jsmooth.outfile}" token="@javaminversion@" value="${build.jvm}"/>
+		<replace file="${jsmooth.outfile}" token="@initheapmemory@" value="${jsmooth.initheap}"/>
+		<replace file="${jsmooth.outfile}" token="@maxheapmemory@" value="${jsmooth.maxheap}"/>
 	</target>
 	
 	<target name="compile" depends="prepare" description="Compile code">
@@ -286,10 +290,14 @@
 	</target>
 	<target name="jar.include" depends="compile" if="include.do">
 		<echo message="Extracting and including library jars in main jar, onejar.use=${onejar.use}."/>
-		<jar jarfile="${jarfile}" basedir="${bin}" manifest="${misc}/${main.manifest}">
+		<jar jarfile="${jarfile.temp}" basedir="${bin}" manifest="${misc}/${main.manifest}">
 			<!-- Merge library jars into final jar file -->
 			<zipgroupfileset refid="lib.jars"/>
 		</jar>
+		<!-- remove possible signature files from library jars https://issues.apache.org/bugzilla/show_bug.cgi?id=34403 -->
+		<zip destfile="${jarfile}">
+			<zipfileset src="${jarfile.temp}" excludes="META-INF/*.RSA, META-INF/*.DSA, META-INF/*.SF" />
+		</zip>
 	</target>
 
 	<target name="jar" depends="jar.onejar,jar.include" description="Build jar">
