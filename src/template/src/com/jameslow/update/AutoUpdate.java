@@ -490,15 +490,19 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 			
 			String us = "/"; //URI seperator
 			if (isapp) {
-				//jar:file:/Users/James/Documents/Programs/James/Eclipse/Template/build/dist/Template.app/Contents/Resources/Java/Template.jar!/main/main.jar
+				//jar:file:/Applications/Template.app/Contents/Resources/Java/Template.jar!/main/main.jar
 				deploy = new File(myReplace(running.substring(running.indexOf(us),apppos+".app".length()),"%20"," ")).getAbsolutePath();
 				launch = deploy.substring(deploy.lastIndexOf(us)+1);
 			} else if (isexe) {
-				//jar:file:/C:/Users/Janakan/AppData/Local/Temp/temp0.jar!/main/main.jar
-				//TODO: not ideal... need to test what happens if exe is not run in the same directory
-				deploy = System.getProperty("user.dir");
-				//TODO: have to assume its this, or could look up in zip below
-				launch = appname+".exe";
+				//jar:file:/C:/Users/{Username}/AppData/Local/Temp/temp0.jar!/main/main.jar
+				deploy = System.getProperty("EXEPATH");
+				if (deploy == null || "".compareTo(deploy) == 0) {
+					deploy = System.getProperty("user.dir");
+				}
+				launch = System.getProperty("EXENAME");
+				if (launch == null || "".compareTo(launch) == 0) {
+					launch = appname+".exe";
+				}
 			} else {
 				//jar:file:/Users/James/Documents/Programs/James/Eclipse/Template/build/dist/Template.jar!/main/main.jar
 				int exclaim = running.lastIndexOf("!");
@@ -625,7 +629,12 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 					String[] cmd = {"open","-a",path};
 					Runtime.getRuntime().exec(cmd).waitFor();
 				} else if (iswindows) {
-					String[] cmd = {path+s+application};
+					String[] cmd = new String[1];
+					if (path.endsWith(s)) {
+						cmd[0] = path+application;
+					} else {
+						cmd[0] = path+application;
+					}
 					Runtime.getRuntime().exec(cmd).waitFor();
 				} else {
 					String[] cmd = {"java","-jar",path+s+application};
