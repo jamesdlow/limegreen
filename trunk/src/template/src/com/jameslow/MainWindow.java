@@ -63,8 +63,9 @@ public class MainWindow extends AbstractWindow implements WindowListener {
 			if (fileMenu.getItemCount() >= 1) {
 				fileMenu.addSeparator();
 			}
-			fileMenu.add(new JMenuItem(closeAction));
-			if (Main.OS().addQuit()) {
+			if (!Main.OS().addQuit()) {
+				fileMenu.add(new JMenuItem(closeAction));
+			} else {
 				fileMenu.add(new JMenuItem(exitAction));	
 			}
 			mainMenuBar.add(fileMenu);
