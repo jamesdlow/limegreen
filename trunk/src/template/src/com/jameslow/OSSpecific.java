@@ -357,4 +357,7 @@ public class OSSpecific {
 	public boolean settingsImmediate() {
 		return false;
 	}
+	public int getMenuBar() {
+		return 0;
+	}
 }
