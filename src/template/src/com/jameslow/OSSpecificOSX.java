@@ -145,4 +145,7 @@ public class OSSpecificOSX extends OSSpecific {
 	public boolean settingsImmediate() {
 		return true;
 	}
+	public int getMenuBar() {
+		return 22;
+	}
 }
