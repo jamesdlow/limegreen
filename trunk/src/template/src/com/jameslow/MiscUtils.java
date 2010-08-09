@@ -1,5 +1,7 @@
 package com.jameslow;
 
+import java.util.Calendar;
+
 public class MiscUtils {
 	public static void wait (int n){
 		long t0, t1;
@@ -22,5 +24,13 @@ public class MiscUtils {
 			}
 		}
 		return true;
+	}
+	public static double excelDate(Calendar now) {
+	    Calendar cal1900 = Calendar.getInstance();
+	    cal1900.set(1900, 1, 1);
+	    long timenow = now.getTimeInMillis();
+	    long time1900 = cal1900.getTimeInMillis();
+	    long diff = timenow - time1900;
+	    return diff / (24 * 60 * 60 * 1000);
 	}
 }
