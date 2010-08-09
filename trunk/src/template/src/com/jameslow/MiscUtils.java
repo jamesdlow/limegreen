@@ -30,7 +30,7 @@ public class MiscUtils {
 	    cal1900.set(1900, 1, 1);
 	    long timenow = now.getTimeInMillis();
 	    long time1900 = cal1900.getTimeInMillis();
-	    long diff = timenow - time1900;
-	    return diff / (24 * 60 * 60 * 1000);
+	    float diff = timenow - time1900;
+	    return diff / (float) (24 * 60 * 60 * 1000);
 	}
 }
