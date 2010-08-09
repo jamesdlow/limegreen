@@ -27,10 +27,11 @@ public class MiscUtils {
 	}
 	public static double excelDate(Calendar now) {
 	    Calendar cal1900 = Calendar.getInstance();
-	    cal1900.set(1900, 1, 1);
+	    cal1900.set(1899, 12, 31);
 	    long timenow = now.getTimeInMillis();
 	    long time1900 = cal1900.getTimeInMillis();
 	    float diff = timenow - time1900;
-	    return diff / (float) (24 * 60 * 60 * 1000);
+	    //TODO: 33 magic number to make dates work correctly, means this function is only accurate for current dates
+	    return 33 + (diff / (float) (24 * 60 * 60 * 1000));
 	}
 }
