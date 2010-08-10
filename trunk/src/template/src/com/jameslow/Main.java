@@ -269,4 +269,14 @@ public class Main {
 	protected boolean onQuit() {
 		return true;
 	}
+	public static void showLogError(String msg, String title) {
+		showLogError(msg,title,null);
+	}
+	public static void showLogError(String msg, String title, Exception e) {
+		showLogError(msg,title,null,new JFrame());
+	}
+	public static void showLogError(String msg, String title, Exception e, Component comp) {
+		JOptionPane.showMessageDialog(comp,msg,title,JOptionPane.WARNING_MESSAGE);
+		Main.Logger().warning(msg+(e == null ? "" : ": "+e.getMessage()));
+	}
 }
