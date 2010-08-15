@@ -320,7 +320,6 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 					versionhtml.append("<br><font face=Arial>Version: "+getTagValue(newer,LIMEGREEN_VERSION)+" Build: "+getTagValue(newer,LIMEGREEN_BUILD));
 					versionhtml.append("<br><br><font face=Arial>"+getTagValue(newer,ATOM_CONTENT).replaceAll("<br>(\\n|\\r\\n)|(\\n|\\r\\n)<br>|(\\n|\\r\\n)", "<br>\n"));
 					versionhtml.append("</td></tr></table></html>");
-					
 				}
 				return versionhtml.toString();
 			}
@@ -633,7 +632,7 @@ public class AutoUpdate extends Thread implements ActionListener, ItemListener, 
 					if (path.endsWith(s)) {
 						cmd[0] = path+application;
 					} else {
-						cmd[0] = path+application;
+						cmd[0] = path+s+application;
 					}
 					Runtime.getRuntime().exec(cmd).waitFor();
 				} else {
