@@ -319,7 +319,7 @@
 			icon="${application.osx.icon}"
 			jvmversion="${build.jvm}+"
 			build="${build.number}"
-			version="${build.version}"
+			version="${new.version}"
 			dir="${dist}"
 			mainclass="${mainclass}"
 			jar="${jarfile}"
