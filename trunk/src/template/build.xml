@@ -224,10 +224,10 @@
 			<equals arg1="${new.doversion}" arg2=""/>
 		</condition>
 	</target>
-	<target name="version.default" depends="version.input">
+	<target name="version.default">
 		<property name="new.version" value="${build.version}"/>
 	</target>
-	<target name="version" depends="version.input,version.default" description="Prompt user to enter new version">
+	<target name="version" depends="version.input" description="Prompt user to enter new version">
 		<!-- At the moment version requires nothing else -->
 	</target>
 	
@@ -244,7 +244,7 @@
 		<replace file="${jsmooth.outfile}" token="@maxheapmemory@" value="${jsmooth.maxheap}"/>
 	</target>
 	
-	<target name="compile" depends="prepare" description="Compile code">
+	<target name="compile" depends="prepare,version.default" description="Compile code">
 		<javac srcdir="${src}" destdir="${bin}"
 			source="${build.jvm}" target="${build.jvm}"
 			failonerror="true"
