@@ -173,6 +173,7 @@ public class OSSpecific {
 		return !(fc == null) && fc.isVisible();
 	}
 	protected File saveOpenFileDialog(Frame parent, boolean dirsonly, String title, String dir, Filefilter[] filters, boolean save) {
+		File file = null;
 		if (!dialogShowing()) {
 			fc = new JFileChooser(dir);
 			if (dirsonly) {
@@ -188,12 +189,12 @@ public class OSSpecific {
 				fc.setDialogType(JFileChooser.SAVE_DIALOG);
 			}
 			int returnVal = fc.showOpenDialog(parent);
-	        if (returnVal == JFileChooser.APPROVE_OPTION) {
-	            return fc.getSelectedFile();
-	        }
-	        fc = null;
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				file = fc.getSelectedFile();
+			}
+			fc = null;
 		}
-        return null;
+		return file;
 	}
 	public File saveFileDialog(Frame parent) {
 		return saveFileDialog(parent,null);
