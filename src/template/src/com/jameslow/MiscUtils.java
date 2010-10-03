@@ -13,11 +13,15 @@ public class MiscUtils {
 	public static boolean isblank(String s) {
 		return (s == null || "".compareTo(s) == 0);
 	}
-	public static boolean match(String needle, String haystack) {
+	public static String[] searchSplit(String needle) {
 		String regex = " |,|\\.|;|:|\t";
-		String[] needles = needle.toUpperCase().split(regex);
-		haystack = haystack.toUpperCase();
-		
+		return needle.toLowerCase().split(regex);
+	}
+	public static boolean match(String needle, String haystack) {
+		return match(searchSplit(needle),haystack);
+	}
+	public static boolean match(String[] needles, String haystack) {
+		haystack = haystack.toLowerCase();
 		for (int i = 0; i < needles.length; i++ ) {
 			if (!(haystack.indexOf(needles[i]) >= 0)) {
 				return false;
