@@ -27,6 +27,7 @@ public class OSSpecific {
 	protected static final ResourceBundle main = ResourceBundle.getBundle(MAIN_BUNDLE, Locale.getDefault());
 	protected static final Properties properties = System.getProperties();
 	protected static final String osname = properties.getProperty("os.name").toLowerCase();
+	protected static final String javaversion = System.getProperty("java.version");
 	
 	//Class variables
 	protected JFileChooser fc;
@@ -360,5 +361,11 @@ public class OSSpecific {
 	}
 	public int getMenuBar() {
 		return 0;
+	}
+	public boolean javaVersion(char major, char minor) {
+		char thismajor = javaversion.charAt(0);
+		char thisminor = javaversion.charAt(2);
+		char thispoint = javaversion.charAt(4);
+		return (thismajor >= major && thisminor >= minor);
 	}
 }

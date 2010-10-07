@@ -14,13 +14,15 @@ import com.jameslow.FileUtils.Filefilter;
 
 public class OSSpecificOSX extends OSSpecific {
 	private static final String LIBRARY = "Library";
+	private static final String CACHES = "Caches";
+	private static final String CLEANUP = "Cleanup At Startup";
 	private static final String LOGS = "Logs";
 	private static final String APPSUP = "Application Support";
 	
 	protected FileDialog dialog; 
 	
 	public OSSpecificOSX() {
-		super();	
+		super();
 	}
 	
 	public void setSettingsDir() {
@@ -34,6 +36,9 @@ public class OSSpecificOSX extends OSSpecific {
 	public void setDocumentsDir() {
 		String s = fileSeparator();
 		docsdir = homeDir()+s+"Documents";
+	}
+	public void setTempDir() {
+		tempdir = homeDir() + s + LIBRARY + s + CACHES + s + CLEANUP + s + appName();
 	}
 	public void preSwing() {
 		try {
