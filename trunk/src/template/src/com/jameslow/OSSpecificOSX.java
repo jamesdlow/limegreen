@@ -38,6 +38,7 @@ public class OSSpecificOSX extends OSSpecific {
 		docsdir = homeDir()+s+"Documents";
 	}
 	public void setTempDir() {
+		String s = fileSeparator();
 		tempdir = homeDir() + s + LIBRARY + s + CACHES + s + CLEANUP + s + appName();
 	}
 	public void preSwing() {
