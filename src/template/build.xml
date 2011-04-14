@@ -306,7 +306,7 @@
 	<target name="exe" depends="jar,create.jsmooth" description="Build exe">
 		<jsmoothgen project="${jsmooth.outfile}" skeletonroot="${jsmooth}/skeletons"/>
 	</target>
-	<target name="exe.run" depends="exe">
+	<target name="exe.run" depends="exe" if="is.windows">
 		<exec dir="${dist}" executable="${dist}/${name}.exe"/>
 	</target>
 	<target name="app.other" depends="jar" if="not.mac">
