@@ -22,11 +22,11 @@ public class Droppable implements DropTargetListener, DragSourceListener, DragGe
 	protected boolean dragging = false;
 	protected int overIndex = -1;
 	protected int dragIndex = -1;
-	protected List<String> paths = new ArrayList<String>();
+	protected List paths = new ArrayList();
 	protected JList list;
 	protected JTable table;
 	protected JComponent comp;
-	protected List<DroppableListener> listeners = new ArrayList<DroppableListener>();
+	protected List listeners = new ArrayList();
 	
 	private boolean allow_add = false; //Allow add to this list
 	private boolean allow_rearrange = false; //Allow rearrange in this list
@@ -162,13 +162,13 @@ public class Droppable implements DropTargetListener, DragSourceListener, DragGe
 	
 	//File path stuff
 	public String getFilename(int index) {
-		return FileUtils.getFilename(paths.get(index));
+		return FileUtils.getFilename((String) paths.get(index));
 	}
 	public String getSelectedFilePath() {
 		return getFilepath(getSelectedIndex());
 	}
 	public String getFilepath(int index) {
-		return paths.get(index);
+		return (String) paths.get(index);
 	}
 	public void addFilepaths(String[] paths) {
 		addFilepaths(paths, getSelectedIndex());
@@ -184,12 +184,14 @@ public class Droppable implements DropTargetListener, DragSourceListener, DragGe
 	public void addFilepath(String path, int index) {
 		if (index == -1 || index >= paths.size()) {
 			paths.add(path);
-			for (DroppableListener listener : listeners) {
+			for (int i=0; i<listeners.size(); i++) {
+				DroppableListener listener = (DroppableListener) listeners.get(i);
 				listener.addFilePath(path);
 			}
 		} else {
 			paths.add(index, path);
-			for (DroppableListener listener : listeners) {
+			for (int i=0; i<listeners.size(); i++) {
+				DroppableListener listener = (DroppableListener) listeners.get(i);
 				listener.addFilePath(index, path);
 			}
 			setSelectedIndex(index);
@@ -215,7 +217,8 @@ public class Droppable implements DropTargetListener, DragSourceListener, DragGe
 	}
 	public void removeFilepath(int index) {
 		paths.remove(index);
-		for (DroppableListener listener : listeners) {
+		for (int i=0; i<listeners.size(); i++) {
+			DroppableListener listener = (DroppableListener) listeners.get(i);
 			listener.removeFilePath(index);
 		}
 	}
@@ -238,7 +241,8 @@ public class Droppable implements DropTargetListener, DragSourceListener, DragGe
 		} else {
 			removeFilepath(index);
 		}
-		for (DroppableListener listener : listeners) {
+		for (int i=0; i<listeners.size(); i++) {
+				DroppableListener listener = (DroppableListener) listeners.get(i);
 			listener.rearrangeFilePath(index,to);
 		}
 	}
@@ -248,7 +252,7 @@ public class Droppable implements DropTargetListener, DragSourceListener, DragGe
     public String[] getFilepaths() {
     	String[] result = new String[paths.size()];
     	for(int i=0; i<result.length; i++) {
-    		result[i] = paths.get(i);
+    		result[i] = (String) paths.get(i);
     	}
     	return result;
     }
@@ -258,12 +262,11 @@ public class Droppable implements DropTargetListener, DragSourceListener, DragGe
 		if(allow_rejected_remove && !DragSourceDropEvent.getDropSuccess()) {
 			try {
 				Transferable tr = DragSourceDropEvent.getDragSourceContext().getTransferable();
-				List<LimegreenString> lgstrings = (List<LimegreenString>) tr.getTransferData(LimegreenStringFlavor);
+				List lgstrings = (List) tr.getTransferData(LimegreenStringFlavor);
 				int[] indices = new int[lgstrings.size()];
-				int i = 0;
-				for (LimegreenString lgs : lgstrings) {
+				for (int i=0; i<lgstrings.size(); i++) {
+					LimegreenString lgs = (LimegreenString) listeners.get(i);
 					indices[i] = lgs.index;
-					i++;
 				}
 				removeFilepaths(indices);
 			} catch (UnsupportedFlavorException e) {
@@ -335,10 +338,11 @@ public class Droppable implements DropTargetListener, DragSourceListener, DragGe
 			if (allow_rearrange && dragging && tr.isDataFlavorSupported(LimegreenStringFlavor)) {
 				dropTargetDropEvent.acceptDrop(DnDConstants.ACTION_COPY);
 				DataFlavor[] flavors = tr.getTransferDataFlavors();
-				List<LimegreenString> lgstrings = (List<LimegreenString>) tr.getTransferData(LimegreenStringFlavor);
-				int i = 1;
+				List lgstrings = (List) tr.getTransferData(LimegreenStringFlavor);
+				int k = 1;
 				int j = 0;
-				for (LimegreenString lgs : lgstrings) {
+				for (int i=0; i<lgstrings.size(); i++) {
+					LimegreenString lgs = (LimegreenString) listeners.get(i);
 					if (lgs != null) {
 						if (dragging) {
 							rearrangeFilepath(lgs.index,overIndex+j);
@@ -348,7 +352,7 @@ public class Droppable implements DropTargetListener, DragSourceListener, DragGe
 						} else {
 							File file = new File(lgs.filepath);
 							if (file.isFile()) {
-								addFilepath(lgs.filepath,overIndex+i++);
+								addFilepath(lgs.filepath,overIndex+k++);
 							}
 						}
 					}
@@ -356,19 +360,18 @@ public class Droppable implements DropTargetListener, DragSourceListener, DragGe
 				dropTargetDropEvent.getDropTargetContext().dropComplete(true);
 			} else if (allow_add && tr.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
 				dropTargetDropEvent.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
-				List<File> filelist = (List<File>) tr.getTransferData(DataFlavor.javaFileListFlavor);
-				int i = 1;
-				for (File file : filelist) {
+				List filelist = (List) tr.getTransferData(DataFlavor.javaFileListFlavor);
+				for (int i=0; i<filelist.size(); i++) {
+					File file = (File) filelist.get(i);
 					if (file.isFile()) {
-						addFilepath(file.getAbsolutePath(),overIndex+i);
+						addFilepath(file.getAbsolutePath(),overIndex+i+1);
 					} else if (file.isDirectory()) {
 						String[] files = file.list(FileUtils.getHiddenDirFilter());
-						int j = 0;
-						for (String filepath : files) {
-							addFilepath(file.getAbsolutePath() + Main.OS().fileSeparator() + filepath,overIndex+j++);
+						for (int j=0; i<files.length; j++) {
+							String filepath = files[j];
+							addFilepath(file.getAbsolutePath() + Main.OS().fileSeparator() + filepath,overIndex+j);
 						}
 					}
-					i++;
 				}
 				dropTargetDropEvent.getDropTargetContext().dropComplete(true);
 			} else {
@@ -390,10 +393,11 @@ public class Droppable implements DropTargetListener, DragSourceListener, DragGe
 			//FileSelection transferable = new FileSelection(new File(getFilepath(getSelectedIndex())));
 			int[] selected = getSelectedIndices();
 			FileSelection transferable = new FileSelection(allow_file_transfer);
-			for (int i : selected) {
+			for (int i=0; i<selected.length; i++) {
+				int index = selected[i];
 				LimegreenString lgs = new LimegreenString();
-				lgs.filepath = getFilepath(i);
-				lgs.index = i;
+				lgs.filepath = getFilepath(index);
+				lgs.index = index;
 				transferable.addLimegreenString(lgs);
 			}
 			dragGestureEvent.startDrag(DragSource.DefaultCopyDrop,transferable,this);
@@ -404,59 +408,62 @@ public class Droppable implements DropTargetListener, DragSourceListener, DragGe
 	public class FileSelection implements Transferable {
 		final static int LIMEGREEN = 0;
 		final static int FILE = 1;
-        final static int STRING = 2;
-        final static int PLAIN = 3;	
-        DataFlavor flavors[];
-        private boolean allow_file_transfer;
-        private List<LimegreenString> lgstrings = new Vector<LimegreenString>();
+		final static int STRING = 2;
+		final static int PLAIN = 3;	
+		DataFlavor flavors[];
+		private boolean allow_file_transfer;
+		private List lgstrings = new Vector();
 		
-        public FileSelection(boolean allow_file_transfer) {
-        	this.allow_file_transfer = allow_file_transfer;
-        	if (allow_file_transfer) {
-        		flavors = new DataFlavor[4];
-        		flavors[LIMEGREEN] = LimegreenStringFlavor;
-        		flavors[FILE] = DataFlavor.javaFileListFlavor;
-        		flavors[STRING] = DataFlavor.stringFlavor;
-        		flavors[PLAIN] = DataFlavor.plainTextFlavor;
-        	} else {
-        		flavors = new DataFlavor[1];
-        		flavors[LIMEGREEN] = LimegreenStringFlavor;
-        	}
-        }
-        //{
+		public FileSelection(boolean allow_file_transfer) {
+			this.allow_file_transfer = allow_file_transfer;
+			if (allow_file_transfer) {
+				flavors = new DataFlavor[4];
+				flavors[LIMEGREEN] = LimegreenStringFlavor;
+				flavors[FILE] = DataFlavor.javaFileListFlavor;
+				flavors[STRING] = DataFlavor.stringFlavor;
+				flavors[PLAIN] = DataFlavor.plainTextFlavor;
+			} else {
+				flavors = new DataFlavor[1];
+				flavors[LIMEGREEN] = LimegreenStringFlavor;
+			}
+		}
+		//{
 		//	
-        //}
-        /* Returns the array of flavors in which it can provide the data. */
-        public synchronized DataFlavor[] getTransferDataFlavors() {
+		//}
+		/* Returns the array of flavors in which it can provide the data. */
+		public synchronized DataFlavor[] getTransferDataFlavors() {
 			return flavors;
-        }
-        public boolean isDataFlavorSupported(DataFlavor flavor) {
-        	for (DataFlavor flavortype : flavors) {
-        		if (flavortype.equals(flavor)) {
-        			return true;
-        		}
-        	}
-        	return false;
-        }
-        public void addLimegreenString(LimegreenString lgs) {
-        	lgstrings.add(lgs);
-        }
-        public synchronized Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-        	if (flavor.equals(flavors[LIMEGREEN])) {
-        		return lgstrings;
-        	} else if (allow_file_transfer) {
-        		if (flavor.equals(flavors[FILE])) {
-        			List<File> list = new Vector<File>();
-        			for (LimegreenString lgs : lgstrings) {
-        				list.add(new File(lgs.filepath));
-        			}
-        			return list;
+		}
+		public boolean isDataFlavorSupported(DataFlavor flavor) {
+			for (int i=0; i<flavors.length; i++) {
+				DataFlavor flavortype = flavors[i];
+				if (flavortype.equals(flavor)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		public void addLimegreenString(LimegreenString lgs) {
+			lgstrings.add(lgs);
+		}
+		public synchronized Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+			if (flavor.equals(flavors[LIMEGREEN])) {
+				return lgstrings;
+			} else if (allow_file_transfer) {
+				if (flavor.equals(flavors[FILE])) {
+					List list = new Vector();
+					for (int i=0; i<lgstrings.size(); i++) {
+						LimegreenString lgs = (LimegreenString) lgstrings.get(i);
+						list.add(new File(lgs.filepath));
+					}
+					return list;
 				} else if (flavor.equals(flavors[PLAIN]) || flavor.equals(flavors[STRING])) {
 					String result = "";
 					final String ls = Main.OS().lineSeparator();
-					for (LimegreenString lgs : lgstrings) {
-        				result = result + lgs.filepath + ls;
-        			}
+					for (int i=0; i<lgstrings.size(); i++) {
+						LimegreenString lgs = (LimegreenString) lgstrings.get(i);
+						result = result + lgs.filepath + ls;
+					}
 					if (flavor.equals(flavors[PLAIN])) {
 						//010-03-31 17:50:16.157 java[48703:80f] Couldn't convert path "/Users/James/Documents/Worship/Lyrics/A New Commandment.txt" to an FSRef to put on the pasteboard.
 						return new StringReader(result);
@@ -466,9 +473,9 @@ public class Droppable implements DropTargetListener, DragSourceListener, DragGe
 				} else {
 					throw new UnsupportedFlavorException(flavor);
 				}
-        	} else {
-        		throw new UnsupportedFlavorException(flavor);
-        	}
-        }
-    }
+			} else {
+				throw new UnsupportedFlavorException(flavor);
+			}
+		}
+	}
 }
