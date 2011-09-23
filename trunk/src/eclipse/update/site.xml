@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <description name="Limegreen Projects" url="http://limegreen.googlecode.com/svn/trunk/src/eclipse/update/">
+      Limegreen Projects
+   </description>
+   <feature url="features/com.jameslow.limegreen.feature_0.75.20110923060646.jar" id="com.jameslow.limegreen.feature" version="0.75.20110923060646">
+      <category name="com.jameslow.limegreen.category"/>
+   </feature>
+   <category-def name="com.jameslow.limegreen.category" label="Limegreen Projcts"/>
+</site>

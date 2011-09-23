@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+<project name="Plugin / Update Site" basedir="." default="usage">
+	<property name="build.file" value="build.properties"/>
+	<property name="local.file" value="local.properties"/>
+	<property file="${build.file}"/>
+	<property file="${local.file}"/>
+	<tstamp>
+		<format property="time.stamp" pattern="yyyyMMddhhmmss"/>
+	</tstamp>
+	<property name="version" value="${build.version}.${time.stamp}"/>
+	<property name="plugin" location="plugin"/>
+		<property name="src" location="${plugin}/src"/>
+		<property name="bin" location="${plugin}/bin"/>
+	<property name="build" location="${build.location}"/>
+	<property name="feature" location="feature"/>
+	<property name="update" location="update"/>
+		<property name="update.features" location="${update}/features"/>
+			<property name="featurejar.file" value="${build.namespace}.feature_${version}.jar"/>
+			<property name="featurejar.path" location="${update.features}/${featurejar.file}"/>
+		<property name="update.plugins" location="${update}/plugins"/>
+			<property name="pluginjar.file" value="${build.namespace}_${version}.jar"/>
+			<property name="pluginjar.path" location="${update.plugins}/${pluginjar.file}"/>
+	<property name="tools" location="tools"/>
+		<property name="tools.ant" location="${tools}"/>
+	
+	<!-- TASKS -->
+	<fileset id="ant.jars" dir="${tools.ant}">
+		<include name="**/*.jar"/>
+	</fileset>
+	<path id="ant.path">
+		<fileset refid="ant.jars"/>
+	</path>
+	<taskdef name="ftp" classname="org.apache.tools.ant.taskdefs.optional.net.FTP" classpathref="ant.path"/>
+	
+	<!-- USAGE -->
+	<target name="usage">
+		<echo message=""/>
+		<echo message="${ant.project.name} - ${time.stamp}"/>
+		<echo message="---------------------------------------------"/>
+		<echo message=""/>
+		<echo message="Available targets are:"/>
+		<echo message=""/>
+		<echo message="plugin --&gt; Create plugin"/>
+		<echo message="pluginjar --&gt; Create plugin and jar it"/>
+		<echo message="copy --&gt; Create jar and copy it to eclipse"/>
+		<echo message="site --&gt; Create jar and update site"/>
+		<echo message="deploy --&gt; Deploy the update site"/>
+		<echo message="clean --&gt; Remove build directory"/>
+	</target>
+	
+	<!-- COMMON -->
+	<target name="clean" description="Remove build directory">
+		<delete dir="${build}"/>
+		<delete>
+		    <fileset dir="${update.features}" includes="**/*.*"/>
+		    <fileset dir="${update.plugins}" includes="**/*.*"/>
+		    <fileset dir="." includes="**/*.bak"/>
+		</delete>
+	</target>
+	
+	<target name="prepare" depends="clean" description="Create build dirs">
+		<mkdir dir="${build}"/>
+	</target>
+	
+	<target name="build" depends="prepare" description="Increment build details">
+		<propertyfile file="${build.file}">
+			<entry key="build.date" type="date" value="now"/>
+		</propertyfile>
+		<buildnumber file="${build.file}"/>
+	</target>
+	
+	<!-- TARGETS -->
+	<target name="plugin" depends="build" description="Create plugin">
+		<manifest file="${plugin}/META-INF/MANIFEST.MF" mode="update">
+			<attribute name="Bundle-Version" value="${version}"/>
+		</manifest>
+		<copy todir="${build}" preservelastmodified="true">
+			<fileset dir="${bin}">
+				<include name="**/*.*"/>
+			</fileset>
+		</copy>
+		<copy todir="${build}/template" preservelastmodified="true">
+			<fileset dir="${build.template}">
+				<include name="**/*.*"/>
+				<exclude name="bin"/>
+				<exclude name="build/**"/>
+				<exclude name="dist/**"/>
+				<exclude name=".classpath/**"/>
+				<exclude name=".project/**"/>
+				<exclude name="**/secret.properties"/>
+				<exclude name="**/local.properties"/>
+			</fileset>
+		</copy>
+		<copy todir="${build}" preservelastmodified="true">
+			<fileset dir="${plugin}">
+				<include name="META-INF/*.*"/>
+				<include name="plugin.xml"/>
+				<include name="icon.png"/>
+			</fileset>
+		</copy>
+	</target>
+	
+	<target name="pluginjar" depends="plugin" description="Create plugin and jar it">
+		<!-- TODO: Sign jar -->
+		<jar jarfile="${pluginjar.path}" basedir="${build}" manifest="${plugin}/META-INF/MANIFEST.MF"/>
+	</target>
+	
+	<target name="copy" depends="pluginjar" description="Create jar and copy it to eclipse">
+		<copy file="${pluginjar.path}" todir="${local.eclipse.plugins}"/>
+	</target>
+	
+	<target name="feature" depends="pluginjar" description="Create feature jar">
+		<replaceregexp byline="true">
+			<regexp pattern="version=&quot;[^&quot;]{4}[^&quot;]*&quot;"/>
+			<substitution expression="version=&quot;${version}&quot;"/>
+			<fileset dir="${feature}">
+				<include name="feature.xml"/>
+			</fileset>
+		</replaceregexp>
+		<jar jarfile="${featurejar.path}" basedir="${feature}"
+			includes="feature.xml"/>
+	</target>
+	
+	<target name="site" depends="feature" description="Create jar and update site">
+		<!-- TODO: Add Icon -->
+		<replaceregexp byline="true">
+			<regexp pattern="url=&quot;features/[^&quot;]*&quot;"/>
+			<substitution expression="url=&quot;features/${featurejar.file}&quot;"/>
+			<fileset dir="${update}">
+				<include name="site.xml"/>
+			</fileset>
+		</replaceregexp>
+		<replaceregexp byline="true">
+			<regexp pattern="version=&quot;[^&quot;]{4}[^&quot;]*&quot;"/>
+			<substitution expression="version=&quot;${version}&quot;"/>
+			<fileset dir="${update}">
+				<include name="site.xml"/>
+			</fileset>
+		</replaceregexp>
+	</target>
+	
+	<target name="deploy" depends="site" description="Deploy the update site">
+		<ftp server="${ftp.server}"
+			port="${ftp.port}"
+			remotedir="${ftp.path}"
+			userid="${ftp.username}"
+			password="${ftp.password}">
+			<fileset dir="${update}">
+				<include name="**/*.*"/>
+				<exclude name="**/.project"/>
+				<exclude name="**/artifacts.jar"/>
+				<exclude name="**/content.jar"/>
+			</fileset>
+		</ftp>
+	</target>
+</project>
