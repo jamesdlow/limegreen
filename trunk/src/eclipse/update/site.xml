@@ -3,7 +3,7 @@
    <description name="Limegreen Projects" url="http://limegreen.googlecode.com/svn/trunk/src/eclipse/update/">
       Limegreen Projects
    </description>
-   <feature url="features/com.jameslow.limegreen.feature_0.75.20110923060646.jar" id="com.jameslow.limegreen.feature" version="0.75.20110923060646">
+   <feature url="features/com.jameslow.limegreen.feature_0.76.20110923063032.jar" id="com.jameslow.limegreen.feature" version="0.76.20110923063032">
       <category name="com.jameslow.limegreen.category"/>
    </feature>
    <category-def name="com.jameslow.limegreen.category" label="Limegreen Projcts"/>

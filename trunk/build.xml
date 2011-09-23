@@ -18,12 +18,13 @@
 		<property name="onejar" location="${templatetools}/onejar"/>
 		<property name="autoupdate" location="${templatetools}/autoupdate"/>
 		<property name="eclipse" location="${src}/eclipse"/>
-		<property name="eclipseplugin" location="${eclipse}/Plugin"/>
+		<property name="eclipseplugin" location="${eclipse}/plugin"/>
 		<property name="xcode" location="${src}/xcode"/>
 	<property name="build" location="build"/>
 		<property name="antbuild" location="${build}/ant"/>
 			<property name="anttemplate" location="${antbuild}/Template"/>
 		<property name="eclipsebuild" location="${build}/eclipse"/>
+			<property name="eclipsebuildplugin" location="${eclipsebuild}/plugin"/>
 		<property name="xcodebuild" location="${build}/xcode"/>
 			<property name="xcodetemplate" value="Limegreen Java Swing Application"/>
 			<property name="xcodeproject" location="${xcodebuild}/${xcodetemplate}"/>
@@ -139,8 +140,13 @@
 		</copy>
 	</target>
 	
-	<target name="eclipse" description="Create Eclipse Plugin" depends="build">
-
+	<target name="eclipse" description="Create Eclipse Plugin" depends="ant,version.default">
+		<!-- TODO: update version in plugin build.properties from entered version -->
+		<propertyfile file="${eclipse}/build.properties">
+			<entry key="build.version" value="${new.version}"/>
+		</propertyfile>
+		<ant antfile="${eclipse}/build.xml" dir="${eclipse}" inheritAll="false" target="site" />
+		<!-- TODO: copy to update site folder/auto commit -->
 	</target>
 
 	<target name="xcode" description="Create Xcode Project" depends="build">
@@ -175,7 +181,7 @@
 		<!-- At the moment alltemplates requires nothing else -->
 	</target>
 
-	<target name="version.input" depends="alltemplates" if="version.do">
+	<target name="version.input" if="version.do">
 		<input
 			message="Please input a new version. Current version ${build.version}"
 			addproperty="new.version"
@@ -187,14 +193,14 @@
 			<equals arg1="${new.doversion}" arg2=""/>
 		</condition>
 	</target>
-	<target name="version.default" depends="version.input">
+	<target name="version.default">
 		<property name="new.version" value="${build.version}"/>
 	</target>
 	<target name="version" depends="version.input,version.default" description="Prompt user to enter new version">
 		<!-- At the moment version requires nothing else -->
 	</target>
 
-	<target name="release" depends="version" description="Create a new release of plugins">
+	<target name="release" depends="version,alltemplates" description="Create a new release of plugins">
 		<property name="ant.zip" value="limegreen-ant-${new.version}.zip"/>
 		<property name="ant.zip.full" location="${build}/${ant.zip}"/>
 		<zip destfile="${ant.zip.full}">
