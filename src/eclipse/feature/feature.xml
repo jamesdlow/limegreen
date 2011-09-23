@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.jameslow.limegreen.feature"
+      label="Limegreen Eclipse Plugin"
+      version="0.75.20110923060646">
+
+   <description url="http://code.google.com/p/limegreen/">
+      Limegreen Project Template
+   </description>
+
+   <copyright url="http://jameslow.com/">
+      © 2011 James David Low
+   </copyright>
+
+   <license url="http://www.opensource.org/licenses/bsd-license.php">
+      New BSD License
+   </license>
+
+   <url>
+      <update label="Limegreen Eclipse Plugin" url="http://limegreen.googlecode.com/svn/trunk/src/eclipse/update/"/>
+   </url>
+
+   <plugin
+         id="com.jameslow.limegreen"
+         download-size="0"
+         install-size="0"
+         version="0.75.20110923060646"
+         unpack="true"/>
+
+</feature>

@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.8.2
+Created-By: 1.6.0_26-b03-384-10M3425 (Apple Inc.)
+Bundle-ManifestVersion: 2
+Bundle-Name: Limegreen Plugin
+Bundle-SymbolicName: com.jameslow.limegreen;singleton:=true
+Bundle-Version: 0.75.20110923060646
+Bundle-Activator: com.jameslow.limegreen.Activator
+Require-Bundle: org.eclipse.ui,org.eclipse.core.runtime,org.eclipse.ui
+ .ide;bundle-version="3.6.2"
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Import-Package: org.eclipse.core.resources
+
