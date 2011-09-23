@@ -4,7 +4,7 @@ Created-By: 1.6.0_26-b03-384-10M3425 (Apple Inc.)
 Bundle-ManifestVersion: 2
 Bundle-Name: Limegreen Plugin
 Bundle-SymbolicName: com.jameslow.limegreen;singleton:=true
-Bundle-Version: 1.0.0.20110923065537
+Bundle-Version: 1.0.0.20110923071247
 Bundle-Activator: com.jameslow.limegreen.Activator
 Require-Bundle: org.eclipse.ui,org.eclipse.core.runtime,org.eclipse.ui
  .ide;bundle-version="3.6.2"
