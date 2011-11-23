@@ -139,10 +139,10 @@ public class OSSpecific {
 		}
 	}
 	public void openFile(String file) {
-		//TODO: Implement For Unix based OS
+		executeProcess(new String[]{"open",file});
 	}
 	public void openFolder(String folder) {
-		//TODO: Implement For Unix based OS
+		executeProcess(new String[]{"open",folder});
 	}
 	public void showFile(String file) {
 		//TODO: Implement For Unix based OS
