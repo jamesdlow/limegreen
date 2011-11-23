@@ -3,11 +3,7 @@ package com.jameslow;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
-
-import javax.swing.JFileChooser;
-import javax.swing.UIManager;
-import javax.swing.filechooser.FileSystemView;
-
+import javax.swing.*;
 import com.jameslow.FileUtils.Filefilter;
 
 //Other:
