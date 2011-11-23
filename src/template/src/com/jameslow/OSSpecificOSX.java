@@ -2,8 +2,6 @@ package com.jameslow;
 
 import java.awt.*;
 import java.io.*;
-import javax.swing.*;
-import javax.swing.filechooser.*;
 import com.apple.eawt.*;
 import com.apple.eio.FileManager;
 import com.jameslow.FileUtils.Filefilter;
