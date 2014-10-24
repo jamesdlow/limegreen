@@ -10,7 +10,6 @@
 		<property name="antlib" location="${tools}/antlib"/>
 		<property name="google" location="${tools}/google"/>
 		<property name="sourceforge" location="${tools}/sourceforge"/>
-		<property name="sflib" location="${sourceforge}/lib"/>
 	<property name="src" location="src"/>
 		<property name="template" location="${src}/template"/>
 		<property name="templatesrc" location="${template}/src"/>
@@ -66,7 +65,7 @@
 	<!-- <taskdef classname="org.apache.tools.ant.taskdefs.optional.ssh.Scp" classpath="${antlib.classpath}" name="scp"/> -->
 	<taskdef classname="com.jameslow.Substring" classpath="${antlib}" name="substring"/>
 
-	<fileset id="sourceforge.jars" dir="${sflib}">
+	<fileset id="sourceforge.jars" dir="${sourceforge}/lib">
 		<include name="**/*.jar"/>
 	</fileset>
 	<path id="sourceforge.id">
