@@ -114,6 +114,14 @@
 	<condition property="appbaseuse" value="${autoupdate.applinkbase}">
 		<isfalse value="${autoupdate.usegoogle}"/>
 	</condition>
+	<!--
+		autoupdate.usergoogle will upload the update xml file to your downloads
+		This is no longer the recommended way of doing things, since it requires deleting the update xml file manuall from the web every time
+		It is now recommended that you set autoupdate.xmllinkbase to the folder containing your xml file from your svn, e.g.
+			https://${google.project}.googlecode.com/svn/trunk/path/to/xml/folder/
+		This method also works for the new github releases implementation, e.g.
+			https://raw.githubusercontent.com/${github.repouser}/${github.repo}/master/path/to/xml/folder/
+	 -->
 	<condition property="appbaseuse" value="http://${google.project}.googlecode.com/files">
 		<istrue value="${autoupdate.usegoogle}"/>
 	</condition>
