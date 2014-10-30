@@ -23,7 +23,7 @@ Features:
   * Automatic Google Code release
   * Automatic Sourceforge release
   * Auto update
-  * [http://code.google.com/p/limegreen/wiki/WordpressPlugin Wordpress] Integration for version history
+  * [Wordpress](http://code.google.com/p/limegreen/wiki/WordpressPlugin) Integration for version history
 
 Coming soon:
 ============
