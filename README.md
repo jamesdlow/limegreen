@@ -19,7 +19,6 @@ Features:
   * Built in logging / settings
   * Ant template
   * Eclipse plugin - Update site: https://raw.githubusercontent.com/jamesdlow/limegreen/master/src/eclipse/update/
-    Although I'm not sure if this has stopped working since moving to 
   * Xcode project template
   * Automatic Google Code release
   * Automatic Sourceforge release
