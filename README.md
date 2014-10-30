@@ -18,12 +18,13 @@ Features:
   * Native look and feel for each platform
   * Built in logging / settings
   * Ant template
-  * Eclipse plugin - Update site: http://limegreen.googlecode.com/svn/trunk/src/eclipse/update/
+  * Eclipse plugin - Update site: https://raw.githubusercontent.com/jamesdlow/limegreen/master/src/eclipse/update/
+    Although I'm not sure if this has stopped working since moving to 
   * Xcode project template
   * Automatic Google Code release
   * Automatic Sourceforge release
   * Auto update
-  * [Wordpress](http://code.google.com/p/limegreen/wiki/WordpressPlugin) Integration for version history
+  * Wordpress integration for version history
 
 Coming soon:
 ============
