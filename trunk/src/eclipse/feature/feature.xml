@@ -2,7 +2,7 @@
 <feature
       id="com.jameslow.limegreen.feature"
       label="Limegreen Eclipse Plugin"
-      version="1.0.0.20120216013225">
+      version="1.1.0.20141030062736">
 
    <description url="http://code.google.com/p/limegreen/">
       Limegreen Project Template
@@ -20,7 +20,7 @@
          id="com.jameslow.limegreen"
          download-size="0"
          install-size="0"
-         version="1.0.0.20120216013225"
+         version="1.1.0.20141030062736"
          unpack="true"/>
 
 </feature>
