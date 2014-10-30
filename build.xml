@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Limegreen" default="alltemplates" basedir=".">
+<project name="Limegreen" default="templates" basedir=".">
 	<property name="props" value="build.properties"/>
 	<property file="${props}"/>
 	<property name="secret" value="secret.properties"/>
@@ -8,8 +8,7 @@
 	<!-- Preexisitng Directories -->
 	<property name="tools" location="tools"/>
 		<property name="antlib" location="${tools}/antlib"/>
-		<property name="google" location="${tools}/google"/>
-		<property name="sourceforge" location="${tools}/sourceforge"/>
+		<property name="github" location="${tools}/github"/>
 	<property name="src" location="src"/>
 		<property name="template" location="${src}/template"/>
 		<property name="templatesrc" location="${template}/src"/>
@@ -45,14 +44,6 @@
 		<isfalse value="${build.doversion}"/>
 	</condition>
 
-	<fileset id="google.jars" dir="${google}">
-		<include name="**/*.jar"/>
-	</fileset>
-	<path id="google.path">
-		<fileset refid="google.jars"/>
-	</path>
-	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpathref="google.path" name="gcupload"/>
-
 	<fileset id="antlib.jars" dir="${antlib}">
 		<include name="**/*.jar"/>
 	</fileset>
@@ -65,18 +56,19 @@
 	<!-- <taskdef classname="org.apache.tools.ant.taskdefs.optional.ssh.Scp" classpath="${antlib.classpath}" name="scp"/> -->
 	<taskdef classname="com.jameslow.Substring" classpath="${antlib}" name="substring"/>
 
-	<fileset id="sourceforge.jars" dir="${sourceforge}/lib">
+	<fileset id="github-anttasks.jars" dir="${github}/lib">
 		<include name="**/*.jar"/>
 	</fileset>
-	<path id="sourceforge.id">
-		<fileset refid="sourceforge.jars"/>
-		<pathelement path="${sourceforge}/sfutils-1.01RC1.jar"/>
+	<path id="github-anttasks.classpath">
+		<fileset refid="github-anttasks.jars"/>
+		<pathelement location="."/>
+		<fileset dir="${github}">
+			<include name="**/*.jar"/>
+		</fileset>
 	</path>
-	<pathconvert property="sourceforge.classpath" pathsep=";">
-		<path refid="sourceforge.id"/>
-	</pathconvert>
-	<echo message="Sourceforge classpath set to ${sourceforge.classpath}"/>
-	<taskdef name="sfpublish" classname="org.apache.tools.ant.taskdefs.optional.sourceforge.SourceForgePublish" classpath="${sourceforge.classpath}"/>
+	<taskdef name="github.createrelease" classname="com.github.api.CreateRelease" classpathref="github-anttasks.classpath" loaderref="github-anttasks.classpath.loader" />
+	<taskdef name="github.uploadasset" classname="com.github.api.UploadAsset" classpathref="github-anttasks.classpath" loaderref="github-anttasks.classpath.loader" />
+	<taskdef name="github.fullrelease" classname="com.github.api.FullRelease" classpathref="github-anttasks.classpath" loaderref="github-anttasks.classpath.loader" />
 
 	<target name="secret.copy" description="Copy secret file if it doesn't exist" if="copy.do">
 		<copy file="${secret.example}" tofile="${secret}" overwrite="false"/>
@@ -127,6 +119,16 @@
 			<fileset dir="${template}">
 				<include name="**"/>
 				<exclude name="**/.svn/**"/>
+				<exclude name="build.properties"/>
+				<exclude name="build.xml"/>
+				<exclude name="src/Template.java"/>
+			</fileset>
+		</copy>
+		<copy todir="${anttemplate}">
+			<fileset dir="${template}">
+				<include name="build.properties"/>
+				<include name="build.xml"/>
+				<include name="src/Template.java"/>
 			</fileset>
 			<filterset>
 				<filter token="ProjectName" value="Template"/>
@@ -153,6 +155,16 @@
 			<fileset dir="${template}">
 				<include name="**"/>
 				<exclude name="**/.svn/**"/>
+				<exclude name="build.properties"/>
+				<exclude name="build.xml"/>
+				<exclude name="src/Template.java"/>
+			</fileset>
+		</copy>
+		<copy todir="${xcodeproject}">
+			<fileset dir="${template}">
+				<include name="build.properties"/>
+				<include name="build.xml"/>
+				<include name="src/Template.java"/>
 			</fileset>
 			<filterset>
 				<filter token="ProjectName" value="«PROJECTNAMEASIDENTIFIER»"/>
@@ -164,20 +176,19 @@
 				<exclude name="**/.svn/**"/>
 			</fileset>
 		</copy>
-		<copy todir="${xcodeproject}/tools/google">
-			<fileset dir="${google}">
+		<copy todir="${xcodeproject}/tools/github">
+			<!-- I'm not sure why I had this explicit in the old version, which would leave ant antlib, but there should be no harm in including it -->
+			<!--<fileset dir="${github}">
 				<exclude name="**/.svn/**"/>
-			</fileset>
-		</copy>
-		<copy todir="${xcodeproject}/tools/sourceforge">
-			<fileset dir="${sourceforge}">
+			</fileset>-->
+			<fileset dir="${tools}">
 				<exclude name="**/.svn/**"/>
 			</fileset>
 		</copy>
 	</target>
 
-	<target name="alltemplates" description="Create All" depends="ant,eclipse,xcode">
-		<!-- At the moment alltemplates requires nothing else -->
+	<target name="templates" description="Create All" depends="ant,eclipse,xcode">
+		<!-- At the moment templates requires nothing else -->
 	</target>
 
 	<target name="version.input" if="version.do">
@@ -199,7 +210,7 @@
 		<!-- At the moment version requires nothing else -->
 	</target>
 
-	<target name="release" depends="version,alltemplates" description="Create a new release of plugins">
+	<target name="release" depends="version,templates" description="Create a new release of plugins">
 		<property name="ant.zip" value="limegreen-ant-${new.version}.zip"/>
 		<property name="ant.zip.full" location="${build}/${ant.zip}"/>
 		<zip destfile="${ant.zip.full}">
@@ -232,70 +243,21 @@
 		<move file="${secret.temp}" tofile="${secret}"/>
 	</target>
 
-	<target name="sourceforge" description="Deploy All To Sourceforge" depends="release">
-		<tstamp>
-			<format property="sourceforge.date" pattern="d/M/yyyy"/>
-		</tstamp>
-		<sfpublish
-			releasename="${new.version}"
-			packagename="${sourceforge.project}"
-			packagehidden="no"
-			hidden="no"
-			projectshortname="${sourceforge.project}"
-			projectname="Limegreen"
-			username="${sourceforge.username}"
-			password="${sourceforge.password}"
-			releasedate="${sourceforge.date}">
-			<filespec
-				file="${source.zip.full}"
-				filetype="source_zip"
-				processortype="platform_independent"/>
-			<filespec
-				file="${xcode.zip.full}"
-				filetype="source_zip"
-				processortype="platform_independent"/>
-			<filespec
-				file="${ant.zip.full}"
-				filetype="source_zip"
-				processortype="platform_independent"/>
-		</sfpublish>
-<!--	This doesn't work right now because it can't create the directories first
-		<substring startindex="0" endindex="1" string="${sourceforge.project}" property="oneletter"/>
-		<substring startindex="0" endindex="2" string="${sourceforge.project}" property="twoletters"/>
-		<scp file="${source.zip.full}" todir="${sourceforge.username},${sourceforge.project}@frs.sourceforge.net:/home/frs/project/${oneletter}/${twoletters}/${sourceforge.project}/${sourceforge.project}/${new.version}/${source.zip}" trust="yes" verbose="true" password="${sourceforge.password}" />
-		<scp file="${xcode.zip.full}" todir="${sourceforge.username},${sourceforge.project}@frs.sourceforge.net:/home/frs/project/${oneletter}/${twoletters}/${sourceforge.project}/${sourceforge.project}/${new.version}/${xcode.zip}" trust="yes" verbose="true" password="${sourceforge.password}" />
-		<scp file="${ant.zip.full}" todir="${sourceforge.username},${sourceforge.project}@frs.sourceforge.net:/home/frs/project/${oneletter}/${twoletters}/${sourceforge.project}/${sourceforge.project}/${new.version}/${ant.zip}" trust="yes" verbose="true" password="${sourceforge.password}" />
--->
+	<target name="github" description="Deploy All To GitHub" depends="release">
+		<github.fullrelease
+			repouser="${github.repouser}"
+			repo="${github.repo}"
+			tokenuser="${github.tokenuser}"
+			token="${github.token}"
+			tag="${new.version}">
+			<fileset dir="${build}" casesensitive="yes">
+				<include name="${xcode.zip}"/>
+				<include name="${ant.zip}"/>
+			</fileset>
+		</github.fullrelease>
 	</target>
 
-	<target name="google" description="Deploy All To GoogleCode" depends="release">
-		<gcupload
-			username="${google.username}"
-			password="${google.password}"
-			projectname="${google.project}"
-			filename="${source.zip.full}"
-			targetfilename="${source.zip}"
-			summary="Limegreen Raw Source Code"
-			labels="Type-Source, Limegreen, Source"/>
-		<gcupload
-			username="${google.username}"
-			password="${google.password}"
-			projectname="${google.project}"
-			filename="${xcode.zip.full}"
-			targetfilename="${xcode.zip}"
-			summary="Limegreen Xcode Project Template"
-			labels="Featured, OpSys-OSX, Type-Source, Limegreen, XCode"/>
-		<gcupload
-			username="${google.username}"
-			password="${google.password}"
-			projectname="${google.project}"
-			filename="${ant.zip.full}"
-			targetfilename="${ant.zip}"
-			summary="Limegreen Ant Project Template"
-			labels="Featured, OpSys-All, Type-Source, Limegreen, Ant"/>
-	</target>
-	
-	<target name="deploy" description="Deploy All To GoogleCode And Sourceforge" depends="sourceforge,google">
+	<target name="deploy" description="Deploy to GitHub" depends="github">
 		<!-- At the moment deploy requires nothing else -->
 	</target>
 
