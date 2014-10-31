@@ -44,6 +44,7 @@
 		<isfalse value="${build.doversion}"/>
 	</condition>
 
+	<!-- Ant tasks -->
 	<fileset id="antlib.jars" dir="${antlib}">
 		<include name="**/*.jar"/>
 	</fileset>
