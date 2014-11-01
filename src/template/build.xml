@@ -56,6 +56,12 @@
 	<!-- Ant tasks -->
 	<taskdef classname="com.jameslow.update.Generator" classpath="${autoupdate}" name="autoupdate"/>
 
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+		<classpath>
+			<pathelement location="${tools}/antcontrib/ant-contrib-1.0b3.jar"/>
+		</classpath>
+	</taskdef>
+
 	<fileset id="jar.jars" dir="${jarbundler}">
 		<include name="**/*.jar"/>
 	</fileset>
@@ -312,6 +318,15 @@
 		<pathelement path="${jsmooth}/jnismooth.jar"/>
 	</path>
 	
+	<target name="sort.props" description="Sort properties file after ant messes with the order">
+		<move tofile="temp.properties" file="${props}">
+			<filterchain>
+				<sortfilter/>
+			</filterchain>
+		</move>
+		<move tofile="${props}" file="temp.properties"/>
+	</target>
+	
 	<target name="secret.copy" description="Copy secret file if it doesn't exist" if="copy.do">
 		<copy file="${secret.example}" tofile="${secret}" overwrite="false"/>
 	</target>
@@ -443,7 +458,7 @@
 		</zip>
 	</target>
 
-	<target name="jar" depends="jar.onejar,jar.include" description="Build jar">
+	<target name="jar" depends="jar.onejar,jar.include,sort.props" description="Build jar">
 		<!-- At the moment jar requires nothing else -->
 	</target>
 	<target name="exe" depends="jar,create.jsmooth" description="Build exe">
@@ -543,11 +558,11 @@
 		<java jar="${jarfile}" fork="yes" failonerror="true"/>
 	</target>
 
-	<target name="build" description="Build exe,app" depends="exe,app">
+	<target name="build" description="Build exe,app" depends="exe,app,sort.props">
 		<!-- At the moment build requires nothing else -->
 	</target>
 		
-	<target name="release" description="Create release dmg/zips" depends="dmg,win.zip,other.zip,source.zip">
+	<target name="release" description="Create release dmg/zips" depends="dmg,win.zip,other.zip,source.zip,sort.props">
 		<!-- At the moment release requires nothing else -->
 	</target>
 	
@@ -662,7 +677,7 @@
 		<!-- At the moment deploy requires nothing else -->
 	</target>
 
-	<target name="clean" description="Remove build and dist directories">
+	<target name="clean" description="Remove build and dist directories" depends="sort.props">
 		<delete dir="${build}"/>
 	</target>
 </project>
